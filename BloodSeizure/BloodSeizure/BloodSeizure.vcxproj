@@ -141,10 +141,18 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PlayScene.cpp" />
+    <ClCompile Include="ResultScene.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="PlayScene.h" />
+    <ClInclude Include="ResultScene.h" />
     <ClInclude Include="SceneBase.h" />
+    <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="TitleScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

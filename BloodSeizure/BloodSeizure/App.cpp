@@ -1,5 +1,6 @@
 #include <iostream>
 #include "App.h"
+#include "SceneManager.h"
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -15,7 +16,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     return DefWindowProc(hwnd, msg, wp, lp);
 }
 
-void InitWindow(const TCHAR* appName)
+void App::InitWindow(const TCHAR* appName)
 {
 	HINSTANCE g_hInst = GetModuleHandle(nullptr);
 	if (g_hInst == nullptr)
@@ -70,23 +71,36 @@ void InitWindow(const TCHAR* appName)
 	SetFocus(g_hWnd);
 }
 
-void MainLoop()
+
+App::App(const TCHAR* appName)
+	: m_sceneManager(nullptr)
 {
-	while (1)
+	StartApp(appName);
+}
+
+App::~App()
+{
+	// シーン管理クラスを解放
+	if (m_sceneManager != nullptr)
 	{
-		char t;
-		std::cin >> t;
-		if (t == 'a')
-		{
-			break;
-		}
+		delete m_sceneManager;
 	}
 }
 
-void StartApp(const TCHAR* appName)
+void App::StartApp(const TCHAR* appName)
 {
-    // ウィンドウ生成
+	// ウィンドウ生成
 	InitWindow(appName);
 
-	MainLoop();
+	// シーン管理クラス生成
+	if (m_sceneManager == nullptr)
+	{
+		m_sceneManager = new SceneManager();
+		m_sceneManager->SetNowScene(TAG_SCENE::TITLE);
+	}
+}
+
+void App::GameLoop()
+{
+	m_sceneManager->GameLoop();
 }
