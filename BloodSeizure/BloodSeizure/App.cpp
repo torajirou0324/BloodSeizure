@@ -198,9 +198,9 @@ bool App::Init3D()
 	{
 		// ディスクリプタヒープの設定
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		desc.NumDescriptors				= FrameCount;
-		desc.Type						= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		desc.Flags						= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		desc.NumDescriptors				= FrameCount;						// ディスクリプタの数（ダブルバッファリングするため、2つ）
+		desc.Type						= D3D12_DESCRIPTOR_HEAP_TYPE_RTV;	// タイプの列挙体
+		desc.Flags						= D3D12_DESCRIPTOR_HEAP_FLAG_NONE;	// 
 		desc.NodeMask					= 0;
 
 		// ディスクリプタヒープを生成
@@ -253,6 +253,13 @@ bool App::Init3D()
 		{
 			return false;
 		}
+
+		// イベントの生成
+		m_FenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		if (m_FenceEvent == nullptr)
+		{
+			return false;
+		}
 	}
 
 	// コマンドリストを閉じる
@@ -267,6 +274,56 @@ void App::Term3D()
 
 void App::Render()
 {
+	// コマンドの記録を開始
+	m_pCmdAllocator[m_FrameIndex]->Reset();
+	m_pCmdList->Reset(m_pCmdAllocator[m_FrameIndex], nullptr);
+
+	// リソースバリアの設定
+	D3D12_RESOURCE_BARRIER barrier = {};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = m_pColorBuffer[m_FrameIndex];
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// リソースバリア
+	m_pCmdList->ResourceBarrier(1, &barrier);
+
+	// レンダーターゲットの設定
+	m_pCmdList->OMSetRenderTargets(1, &m_HandleRTV[m_FrameIndex], FALSE, nullptr);
+
+	// クリアカラーの設定
+	float clearColor[] = { 0.25f,0.25f,0.25f,1.0f };
+
+	// レンダーターゲットビューをクリア
+	m_pCmdList->ClearRenderTargetView(m_HandleRTV[m_FrameIndex], clearColor, 0, nullptr);
+
+	// 描画処理
+	{
+
+	}
+
+	// リソースバリアの設定
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = m_pColorBuffer[m_FrameIndex];
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// リソースバリア
+	m_pCmdList->ResourceBarrier(1, &barrier);
+
+	// コマンドの記録を終了
+	m_pCmdList->Close();
+
+	// コマンドを実行
+	ID3D12CommandList* ppCmdLists[] = { m_pCmdList };
+	m_pQueue->ExecuteCommandLists(1, ppCmdLists);
+
+	// 画面に表示
+	Present(1);
 }
 
 void App::WaitGpu()
@@ -275,6 +332,21 @@ void App::WaitGpu()
 
 void App::Present(UINT32 interval)
 {
+	// 画面に表示
+	m_pSwapChain->Present(interval, 0);
+
+	// シグナル処理
+	const auto currentValue = m_FenceCounter[m_FrameIndex];
+	m_pQueue->Signal(m_pFence, currentValue);
+
+	// バックバッファ番号を更新
+	m_FrameIndex = m_pSwapChain->GetCurrentBackBufferIndex();
+
+	// 次のフレームの描画準備がまだであれば待機する
+	if (m_pFence->GetCompletedValue() < m_FenceCounter[m_FrameIndex])
+	{
+		
+	}
 }
 
 
@@ -318,5 +390,6 @@ void App::StartApp(const TCHAR* appName)
 
 void App::GameLoop()
 {
+
 	m_sceneManager->GameLoop();
 }
