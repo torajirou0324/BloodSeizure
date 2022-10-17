@@ -25,14 +25,14 @@ void SceneManager::GameLoop()
 
 		if (tag == TAG_SCENE::NONE)
 		{
-			continue;		// TAGがNONEなのでシーンに変更はないのでループを続ける。
+			return;		// TAGがNONEなのでシーンに変更はないのでループを続ける。
 		}
 
 		// 現在のシーンを解放する
 		ClearScene();
 		if (tag == TAG_SCENE::END)
 		{
-			break;			// アプリケーション終了のタグが返ってたのでループを抜ける。
+			break;		// アプリケーション終了のタグが返ってたのでループを抜ける。
 		}
 		//	次のシーンを生成する。
 		SetNowScene(tag);

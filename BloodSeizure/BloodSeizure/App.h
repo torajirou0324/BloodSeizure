@@ -1,54 +1,101 @@
-#pragma once
+ï»¿#pragma once
+//-----------------------------------------------------------------------------
+// Includes
+//-----------------------------------------------------------------------------
 #include <Windows.h>
 #include <cstdint>
 #include <d3d12.h>
 #include <dxgi1_4.h>
+#include <wrl/client.h>
+#include <d3dcompiler.h>    //â˜…è¿½åŠ .
+#include <DirectXMath.h>    //â˜…è¿½åŠ .
 
+//-----------------------------------------------------------------------------
 // Linker
-#pragma comment(lib,"d3d12.lib")
-#pragma comment(lib,"dxgi.lib")
+//-----------------------------------------------------------------------------
+#pragma comment( lib, "d3d12.lib" )
+#pragma comment( lib, "dxgi.lib" )
+#pragma comment( lib, "d3dcompiler.lib" )   // â˜…è¿½åŠ .
 
-class SceneManager;
+template<typename T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+template<typename T>
+struct ConstantBufferView
+{
+	D3D12_CONSTANT_BUFFER_VIEW_DESC Desc;		// å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ§‹æˆè¨­å®š
+	D3D12_CPU_DESCRIPTOR_HANDLE		HandleCPU;	// CPUãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒãƒ³ãƒ‰ãƒ«
+	D3D12_GPU_DESCRIPTOR_HANDLE		HandleGPU;	// GPUãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒãƒ³ãƒ‰ãƒ«
+	T*								pBuffer;	// ãƒãƒƒãƒ•ã‚¡å…ˆé ­ã¸ã®ãƒã‚¤ãƒ³ã‚¿
+};
 
 class App
 {
 public:
-	App() = delete;
-	App(const TCHAR* appName);
+	App(uint32_t width, uint32_t height);
 	~App();
 
-	void GameLoop();
-private:
-	void StartApp(const TCHAR* appName);
-	void InitWindow(const TCHAR* appName);
+	void Run();
 
-	// D3D12 methods
-	bool Init3D();
-	void Term3D();
+private:
+	// privateæ§‹é€ ä½“
+	struct Vertex
+	{
+		DirectX::XMFLOAT3 Position;		// ä½ç½®åº§æ¨™
+		DirectX::XMFLOAT4 Color;		// é ‚ç‚¹ã‚«ãƒ©ãƒ¼
+	};
+
+	struct alignas(256) Transform
+	{
+		DirectX::XMMATRIX World;		// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—
+		DirectX::XMMATRIX View;			// ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—
+		DirectX::XMMATRIX Proj;			// å°„å½±è¡Œåˆ—
+	};
+
+	// privateå¤‰æ•°
+	static const uint32_t FrameCount = 2;	// ãƒ•ãƒ¬ãƒ¼ãƒ ãƒãƒƒãƒ•ã‚¡æ•°
+
+	HINSTANCE m_hInst;		// ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+	HWND m_hWnd;			// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+	uint32_t m_Width;		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®æ¨ªå¹…
+	uint32_t m_Height;		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ç¸¦å¹…
+
+	ComPtr<ID3D12Device>				m_pDevice;						// ãƒ‡ãƒã‚¤ã‚¹
+	ComPtr<ID3D12CommandQueue>			m_pQueue;						// ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¥ãƒ¼
+	ComPtr<IDXGISwapChain3>				m_pSwapChain;					// ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ã‚¤ãƒ³
+	ComPtr<ID3D12Resource>				m_pColorBuffer[FrameCount];		// ã‚«ãƒ©ãƒ¼ãƒãƒƒãƒ•ã‚¡
+	ComPtr<ID3D12CommandAllocator>		m_pCmdAllocator[FrameCount];	// ã‚³ãƒãƒ³ãƒ‰ã‚¢ãƒ­ãƒ¼ã‚±ãƒ¼ã‚¿
+	ComPtr<ID3D12GraphicsCommandList>	m_pCmdList;						// ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆ
+	ComPtr<ID3D12DescriptorHeap>		m_pHeapRTV;						// ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ’ãƒ¼ãƒ—ï¼ˆãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ï¼‰
+	ComPtr<ID3D12Fence>					m_pFence;						// ãƒ•ã‚§ãƒ³ã‚¹
+	ComPtr<ID3D12DescriptorHeap>		m_pHeapCBV;						// ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ’ãƒ¼ãƒ—ï¼ˆå®šæ•°ãƒãƒƒãƒ•ã‚¡ãƒ“ãƒ¥ãƒ¼ãƒ»ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ãƒ»ã‚¢ãƒ³ã‚ªãƒ¼ãƒ€ãƒ¼ãƒ‰ã‚¢ã‚¯ã‚»ã‚¹ãƒ“ãƒ¥ãƒ¼ï¼‰
+	ComPtr<ID3D12Resource>				m_pVB;							// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
+	ComPtr<ID3D12Resource>				m_pCB[FrameCount];				// å®šæ•°ãƒãƒƒãƒ•ã‚¡
+	ComPtr<ID3D12RootSignature>			m_pRootSignature;				// ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒ‹ãƒãƒ£
+	ComPtr<ID3D12PipelineState>			m_pPSO;							// ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆ
+
+	HANDLE								m_FenceEvent;					// ãƒ•ã‚§ãƒ³ã‚¹ã‚¤ãƒ™ãƒ³ãƒˆ
+	uint64_t							m_FenceCounter[FrameCount];		// ãƒ•ã‚§ãƒ³ã‚¹ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
+	uint32_t							m_FrameIndex;					// ãƒ•ãƒ¬ãƒ¼ãƒ ç•ªå·
+	D3D12_CPU_DESCRIPTOR_HANDLE			m_HandleRTV[FrameCount];		// CPUãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ï¼ˆãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ï¼‰
+	D3D12_VERTEX_BUFFER_VIEW			m_VBV;							// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ãƒ¼ãƒ“ãƒ¥ãƒ¼
+	D3D12_VIEWPORT						m_Viewport;						// ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆ
+	D3D12_RECT							m_Scissor;						// ã‚·ã‚¶ãƒ¼çŸ©å½¢
+	ConstantBufferView<Transform>		m_CBV[FrameCount];				// å®šæ•°ãƒãƒƒãƒ•ã‚¡ãƒ“ãƒ¥ãƒ¼
+	float								m_RotateAngle;					// å›è»¢è§’
+
+	// privateé–¢æ•°
+	bool InitApp();
+	void TermApp();
+	bool InitWnd();
+	void TermWnd();
+	void MainLoop();
+	bool InitD3D();
+	void TermD3D();
 	void Render();
 	void WaitGpu();
-	void Present(UINT32 interval);
+	void Present(uint32_t interval);
+	bool OnInit();
+	void OnTerm();
 
-	SceneManager* m_sceneManager;		// ƒV[ƒ“ƒ}ƒl[ƒWƒƒ[ƒNƒ‰ƒX‚Ìƒ|ƒCƒ“ƒ^
-	
-	static const UINT FrameCount = 2;	// ƒtƒŒ[ƒ€ƒoƒbƒtƒ@
-
-	HINSTANCE		m_hInst;				// ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-	HWND			m_hWnd;					// ƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-	const UINT		WINDOW_WIDTH = 1280;	// ƒEƒBƒ“ƒhƒE‚Ì‰¡•
-	const UINT		WINDOW_HEIGHT = 720;	// ƒEƒBƒ“ƒhƒE‚Ìc•
-	const TCHAR*	ClassName;				// ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-
-	ID3D12Device*				m_pDevice;					// ’Ç‰ÁƒfƒoƒCƒX
-	ID3D12CommandQueue*			m_pQueue;					// ƒRƒ}ƒ“ƒhƒLƒ…[
-	IDXGISwapChain3*			m_pSwapChain;				// ƒXƒƒbƒvƒ`ƒFƒCƒ“
-	ID3D12Resource*				m_pColorBuffer[FrameCount];	// ƒJƒ‰[ƒoƒbƒtƒ@
-	ID3D12CommandAllocator*		m_pCmdAllocator[FrameCount];// ƒRƒ}ƒ“ƒhƒAƒ[ƒP[ƒ^
-	ID3D12GraphicsCommandList*	m_pCmdList;					// ƒRƒ}ƒ“ƒhƒŠƒXƒg
-	ID3D12DescriptorHeap*		m_pHeapRTV;					// ƒfƒBƒXƒNƒŠƒvƒ^ƒq[ƒviƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[j
-	ID3D12Fence*				m_pFence;					// ƒtƒFƒ“ƒX
-	HANDLE						m_FenceEvent;				// ƒtƒFƒ“ƒXƒCƒxƒ“ƒg
-	UINT16						m_FenceCounter[FrameCount];	// ƒtƒFƒ“ƒXƒJƒEƒ“ƒ^[
-	UINT32						m_FrameIndex;				// ƒtƒŒ[ƒ€”Ô†
-	D3D12_CPU_DESCRIPTOR_HANDLE m_HandleRTV[FrameCount];	// CPUƒfƒBƒXƒNƒŠƒvƒ^ƒq[ƒviƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[j
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
 };
