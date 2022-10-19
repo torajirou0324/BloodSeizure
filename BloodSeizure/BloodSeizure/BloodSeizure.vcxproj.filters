@@ -39,9 +39,6 @@
     <ClCompile Include="App.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SceneBase.h">
@@ -65,17 +62,6 @@
     <ClInclude Include="App.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="SimpleVS.hlsl">
-      <Filter>ソース ファイル\Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="SimplePS.hlsl">
-      <Filter>ソース ファイル\Shader</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
