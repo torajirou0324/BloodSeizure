@@ -39,9 +39,6 @@
     <ClCompile Include="App.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="FileUtil.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SceneBase.h">
@@ -63,15 +60,6 @@
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="App.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ComPtr.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="FileUtil.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Pool.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>
