@@ -4,25 +4,18 @@
 
 const auto ClassName = TEXT("BloodSeizure");
 
+
 App::App(uint32_t width, uint32_t height)
-	: m_hInst(nullptr)
-	, m_hWnd(nullptr)
-	, m_Width(width)
-	, m_Height(height)
-	, m_pDevice(nullptr)
-	, m_pQueue(nullptr)
-	, m_pSwapChain(nullptr)
-	, m_pCmdList(nullptr)
-	, m_pHeapRTV(nullptr)
-	, m_pFence(nullptr)
-	, m_FrameIndex(0)
+    : m_hInst(nullptr)
+    , m_hWnd(nullptr)
+    , m_Width(width)
+    , m_Height(height)
+    , m_pDevice(nullptr)
+    , m_pQueue(nullptr)
+    , m_pSwapChain(nullptr)
+    , m_pCmdList(nullptr)
+    , m_FrameIndex(0)
 {
-	for (auto i = 0u; i < FrameCount; ++i)
-	{
-		m_pColorBuffer[i] = nullptr;
-		m_pCmdAllocator[i] = nullptr;
-		m_FenceCounter[i] = 0;
-	}
 }
 
 App::~App()
@@ -31,12 +24,12 @@ App::~App()
 
 void App::Run()
 {
-	if (InitApp())
-	{
-		MainLoop();
-	}
+    if (InitApp())
+    {
+        MainLoop();
+    }
 
-	TermApp();
+    TermApp();
 }
 
 bool App::InitApp()
@@ -52,11 +45,6 @@ bool App::InitApp()
 	{
 		return false;
 	}
-
-    if (!OnInit())
-    {
-        return false;
-    }
 
 	// 正常終了.
 	return true;
@@ -168,7 +156,7 @@ void App::MainLoop()
         }
         else
         {
-            Render();
+            //Render();
         }
     }
 }
@@ -262,34 +250,6 @@ bool App::InitD3D()
         // 不要になったので解放.
         pFactory.Reset();
         pSwapChain.Reset();
-    }
-
-    // コマンドアロケータの生成.
-    {
-        for (auto i = 0u; i < FrameCount; ++i)
-        {
-            hr = m_pDevice->CreateCommandAllocator(
-                D3D12_COMMAND_LIST_TYPE_DIRECT,
-                IID_PPV_ARGS(m_pCmdAllocator[i].GetAddressOf()));
-            if (FAILED(hr))
-            {
-                return false;
-            }
-        }
-    }
-
-    // コマンドリストの生成.
-    {
-        hr = m_pDevice->CreateCommandList(
-            0,
-            D3D12_COMMAND_LIST_TYPE_DIRECT,
-            m_pCmdAllocator[m_FrameIndex].Get(),
-            nullptr,
-            IID_PPV_ARGS(m_pCmdList.GetAddressOf()));
-        if (FAILED(hr))
-        {
-            return false;
-        }
     }
 
     // レンダーターゲットビューの生成.
