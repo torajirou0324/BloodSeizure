@@ -4,16 +4,11 @@
 
 const auto ClassName = TEXT("BloodSeizure");
 
-
 App::App(uint32_t width, uint32_t height)
     : m_hInst(nullptr)
     , m_hWnd(nullptr)
     , m_Width(width)
     , m_Height(height)
-    , m_pDevice(nullptr)
-    , m_pQueue(nullptr)
-    , m_pSwapChain(nullptr)
-    , m_pCmdList(nullptr)
     , m_FrameIndex(0)
 {
 }
@@ -213,21 +208,21 @@ bool App::InitD3D()
 
         // スワップチェインの設定.
         DXGI_SWAP_CHAIN_DESC desc = {};
-        desc.BufferDesc.Width = m_Width;
-        desc.BufferDesc.Height = m_Height;
-        desc.BufferDesc.RefreshRate.Numerator = 60;
+        desc.BufferDesc.Width                   = m_Width;
+        desc.BufferDesc.Height                  = m_Height;
+        desc.BufferDesc.RefreshRate.Numerator   = 60;
         desc.BufferDesc.RefreshRate.Denominator = 1;
-        desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-        desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-        desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        desc.SampleDesc.Count = 1;
-        desc.SampleDesc.Quality = 0;
-        desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        desc.BufferCount = FrameCount;
-        desc.OutputWindow = m_hWnd;
-        desc.Windowed = TRUE;
-        desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+        desc.BufferDesc.ScanlineOrdering        = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+        desc.BufferDesc.Scaling                 = DXGI_MODE_SCALING_UNSPECIFIED;
+        desc.BufferDesc.Format                  = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc.Count                   = 1;
+        desc.SampleDesc.Quality                 = 0;
+        desc.BufferUsage                        = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        desc.BufferCount                        = FrameCount;
+        desc.OutputWindow                       = m_hWnd;
+        desc.Windowed                           = TRUE;
+        desc.SwapEffect                         = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        desc.Flags                              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
         // スワップチェインの生成.
         ComPtr<IDXGISwapChain> pSwapChain;
@@ -250,6 +245,55 @@ bool App::InitD3D()
         // 不要になったので解放.
         pFactory.Reset();
         pSwapChain.Reset();
+    }
+
+    // ディスクリプタプールの生成
+    {
+        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+        desc.NodeMask = 1;
+        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        desc.NumDescriptors = 512;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        if (!DescriptorPool::Create(m_pDevice.Get(), &desc, &m_pPool[POOL_TYPE_RES]))
+        {
+            return false;
+        }
+
+        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+        desc.NumDescriptors = 256;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        if (!DescriptorPool::Create(m_pDevice.Get(), &desc, &m_pPool[POOL_TYPE_SMP]))
+        {
+            return false;
+        }
+
+        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        desc.NumDescriptors = 512;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        if (!DescriptorPool::Create(m_pDevice.Get(), &desc, &m_pPool[POOL_TYPE_RTV]))
+        {
+            return false;
+        }
+
+        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        desc.NumDescriptors = 512;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        if(!DescriptorPool::Create(m_pDevice.Get(),&desc,&m_pPool[POOL_TYPE_DSV]))
+        {
+            return false;
+        }
+    }
+
+    // コマンドリストの生成
+    {
+        if (!m_CommandList.Init(
+            m_pDevice.Get(),
+            D3D12_COMMAND_LIST_TYPE_DIRECT,
+            FrameCount
+        ))
+        {
+            return false;
+        }
     }
 
     // レンダーターゲットビューの生成.

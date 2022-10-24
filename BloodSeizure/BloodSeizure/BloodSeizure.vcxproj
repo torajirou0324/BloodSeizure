@@ -141,8 +141,11 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ColorTarget.cpp" />
+    <ClCompile Include="CommandList.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="DepthTarget.cpp" />
     <ClCompile Include="DescriptorPool.cpp" />
+    <ClCompile Include="Fence.cpp" />
     <ClCompile Include="FileUtil.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlayScene.cpp" />
@@ -153,9 +156,12 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="ColorTarget.h" />
+    <ClInclude Include="CommandList.h" />
     <ClInclude Include="ComPtr.h" />
     <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="DepthTarget.h" />
     <ClInclude Include="DescriptorPool.h" />
+    <ClInclude Include="Fence.h" />
     <ClInclude Include="FileUtil.h" />
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="Pool.h" />

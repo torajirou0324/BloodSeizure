@@ -54,6 +54,15 @@
     <ClCompile Include="ColorTarget.cpp">
       <Filter>ソース ファイル\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="CommandList.cpp">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Fence.cpp">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthTarget.cpp">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SceneBase.h">
@@ -90,6 +99,15 @@
       <Filter>ソース ファイル\Engine</Filter>
     </ClInclude>
     <ClInclude Include="ColorTarget.h">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandList.h">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Fence.h">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthTarget.h">
       <Filter>ソース ファイル\Engine</Filter>
     </ClInclude>
   </ItemGroup>
