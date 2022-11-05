@@ -1,82 +1,33 @@
-//-----------------------------------------------------------------------------
-// File : Model.h
-// Desc : Model Module.
-// Copyright(c) Pocol. All right reserved.
-//-----------------------------------------------------------------------------
 #pragma once
 
-//-----------------------------------------------------------------------------
-// Includes
-//-----------------------------------------------------------------------------
-#include <d3d12.h>
-#include <DirectXMath.h>
-#include <string>
-#include <vector>
+#include "ResMesh.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
-
-///////////////////////////////////////////////////////////////////////////////
-// MeshVertex structure
-///////////////////////////////////////////////////////////////////////////////
-struct MeshVertex
+class Mesh
 {
-    DirectX::XMFLOAT3   Position;
-    DirectX::XMFLOAT3   Normal;
-    DirectX::XMFLOAT2   TexCoord;
-    DirectX::XMFLOAT3   Tangent;
+public:
+    Mesh();
+    virtual ~Mesh();
 
-    MeshVertex() = default;
+    // 初期化処理
+    bool Init(ID3D12Device* pDevice, const ResMesh& resource);
 
-    MeshVertex(
-        DirectX::XMFLOAT3 const& position,
-        DirectX::XMFLOAT3 const& normal,
-        DirectX::XMFLOAT2 const& texcoord,
-        DirectX::XMFLOAT3 const& tangent)
-        : Position(position)
-        , Normal(normal)
-        , TexCoord(texcoord)
-        , Tangent(tangent)
-    { /* DO_NOTHING */
-    }
+    // 終了処理
+    void Term();
 
-    static const D3D12_INPUT_LAYOUT_DESC InputLayout;
+    // 描画処理
+    void Draw(ID3D12GraphicsCommandList* pCmdList);
+
+    // マテリアルIDを取得します
+    uint32_t GetMaterialId() const;
 
 private:
-    static const int InputElementCount = 4;
-    static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
-};
+    VertexBuffer    m_VB;               // 頂点バッファ
+    IndexBuffer     m_IB;               // インデックスバッファ
+    uint32_t        m_MaterialId;       // マテリアルID
+    uint32_t        m_IndexCount;       // インデックス数
 
-///////////////////////////////////////////////////////////////////////////////
-// Material structure
-///////////////////////////////////////////////////////////////////////////////
-struct Material
-{
-    DirectX::XMFLOAT3   Diffuse;        //!< 拡散反射成分です.
-    DirectX::XMFLOAT3   Specular;       //!< 鏡面反射成分です.
-    float               Alpha;          //!< 透過成分です.
-    float               Shininess;      //!< 鏡面反射強度です.
-    std::string         DiffuseMap;     //!< テクスチャファイルパスです.
+    Mesh            (const Mesh&) = delete;
+    void operator = (const Mesh&) = delete;
 };
-
-///////////////////////////////////////////////////////////////////////////////
-// Mesh structure
-///////////////////////////////////////////////////////////////////////////////
-struct Mesh
-{
-    std::vector<MeshVertex>     Vertices;     //!< 頂点データです.
-    std::vector<uint32_t>       Indices;      //!< 頂点インデックスです.
-    uint32_t                    MaterialId;   //!< マテリアル番号です.
-};
-
-//-----------------------------------------------------------------------------
-//! @brief      メッシュをロードします.
-//!
-//! @param[in]      filename        ファイルパス.
-//! @param[out]     meshes          メッシュの格納先です.
-//! @param[out]     materials       マテリアルの格納先です.
-//! @retval true    ロードに成功.
-//! @retval false   ロードに失敗.
-//-----------------------------------------------------------------------------
-bool LoadMesh(
-    const wchar_t* filename,
-    std::vector<Mesh>& meshes,
-    std::vector<Material>& materials);

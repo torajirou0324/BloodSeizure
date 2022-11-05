@@ -136,16 +136,140 @@ void MeshLoader::ParseMesh(ResMesh& dstMesh, const aiMesh* pSrcMesh)
 
         dstMesh.Vertices[i] = MeshVertex(
             DirectX::XMFLOAT3(pPosition->x, pPosition->y, pPosition->z),
-            DirectX::XMFLOAT3()
-        )
+            DirectX::XMFLOAT3(pNormal->x, pNormal->y, pNormal->z),
+            DirectX::XMFLOAT2(pTexCoord->x, pTexCoord->y),
+            DirectX::XMFLOAT3(pTangent->x, pTangent->y, pTangent->z)
+        );
+    }
+
+    // 頂点インデックスのメモリを確保
+    dstMesh.Indices.resize(pSrcMesh->mNumFaces * 3);
+
+    for (auto i = 0u; i < pSrcMesh->mNumFaces; ++i)
+    {
+        const auto& face = pSrcMesh->mFaces[i];
+        assert(face.mNumIndices == 3);  // 三角形化しているため必ず3になっている
+
+        dstMesh.Indices[i * 3 + 0] = face.mIndices[0];
+        dstMesh.Indices[i * 3 + 1] = face.mIndices[1];
+        dstMesh.Indices[i * 3 + 2] = face.mIndices[2];
     }
 }
 
+// マテリアルデータを解析
 void MeshLoader::ParseMaterial(ResMaterial& dstMaterial, const aiMaterial* pSrcMaterial)
 {
+    // 拡散反射
+    {
+        aiColor3D color(0.0f, 0.0f, 0.0f);
+
+        if (pSrcMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
+        {
+            dstMaterial.Diffuse.x = color.r;
+            dstMaterial.Diffuse.y = color.g;
+            dstMaterial.Diffuse.z = color.b;
+        }
+        else
+        {
+            dstMaterial.Diffuse.x = 0.5f;
+            dstMaterial.Diffuse.y = 0.5f;
+            dstMaterial.Diffuse.z = 0.5f;
+        }
+    }
+
+    // 鏡面反射成分
+    {
+        aiColor3D color(0.0f, 0.0f, 0.0f);
+
+        if (pSrcMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS)
+        {
+            dstMaterial.Specular.x = color.r;
+            dstMaterial.Specular.y = color.g;
+            dstMaterial.Specular.z = color.b;
+        }
+        else
+        {
+            dstMaterial.Specular.x = 0.0f;
+            dstMaterial.Specular.y = 0.0f;
+            dstMaterial.Specular.z = 0.0f;
+        }
+    }
+
+    // 鏡面反射強度
+    {
+        auto shininess = 0.0f;
+        if (pSrcMaterial->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS)
+        {
+            dstMaterial.Shininess = shininess;
+        }
+        else
+        {
+            dstMaterial.Shininess = 0.0f;
+        }
+    }
+
+    // ディフューズマップ
+    {
+        aiString path;
+        if (pSrcMaterial->Get(AI_MATKEY_TEXTURE_DIFFUSE(0), path) == AI_SUCCESS)
+        {
+            dstMaterial.DiffuseMap = Convert(path);
+        }
+        else
+        {
+            dstMaterial.DiffuseMap.clear();
+        }
+    }
+
+    // スペキュラーマップ
+    {
+        aiString path;
+        if (pSrcMaterial->Get(AI_MATKEY_TEXTURE_SPECULAR(0), path) == AI_SUCCESS)
+        {
+            dstMaterial.SpecularMap = Convert(path);
+        }
+        else
+        {
+            dstMaterial.SpecularMap.clear();
+        }
+    }
+
+    // シャイネスマップ
+    {
+        aiString path;
+        if (pSrcMaterial->Get(AI_MATKEY_TEXTURE_SHININESS(0), path) == AI_SUCCESS)
+        {
+            dstMaterial.ShininessMap = Convert(path);
+        }
+        else
+        {
+            dstMaterial.ShininessMap.clear();
+        }
+    }
+
+    // 法線マップ
+    {
+        aiString path;
+        if (pSrcMaterial->Get(AI_MATKEY_TEXTURE_NORMALS(0), path) == AI_SUCCESS)
+        {
+            dstMaterial.NormalMap = Convert(path);
+        }
+        else
+        {
+            dstMaterial.NormalMap.clear();
+        }
+    }
 }
+
+const D3D12_INPUT_ELEMENT_DESC MeshVertex::InputElements[] = {
+    {"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+    {"NORMAL"  ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+    {"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT   ,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+    {"TANGENT" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0}
+};
 
 bool LoadMesh(const wchar_t* filename, std::vector<ResMesh>& meshs, std::vector<ResMaterial>& materials)
 {
-    return false;
+    MeshLoader loader;
+    return loader.Load(filename, meshs, materials);
 }
