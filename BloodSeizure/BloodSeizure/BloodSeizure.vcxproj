@@ -154,6 +154,7 @@
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="ResMesh.cpp" />
     <ClCompile Include="ResultScene.cpp" />
+    <ClCompile Include="SampleApp.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TitleScene.cpp" />
@@ -174,8 +175,10 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="Pool.h" />
+    <ClInclude Include="ReleaseProcess.h" />
     <ClInclude Include="ResMesh.h" />
     <ClInclude Include="ResultScene.h" />
+    <ClInclude Include="SampleApp.h" />
     <ClInclude Include="SceneBase.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Texture.h" />

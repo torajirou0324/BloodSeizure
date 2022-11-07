@@ -10,6 +10,8 @@
 #include "DepthTarget.h"
 #include "CommandList.h"
 #include "Fence.h"
+#include "Mesh.h"
+#include "Texture.h"
 
 #pragma comment( lib , "d3d12.lib" )
 #pragma comment( lib , "dxgi.lib" )
