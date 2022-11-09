@@ -45,8 +45,6 @@ bool DescriptorPool::Create(ID3D12Device* pDevice, const D3D12_DESCRIPTOR_HEAP_D
 
     // 正常終了
     return true;
-
-    return false;
 }
 
 // 参照カウントを増やす

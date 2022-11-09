@@ -3,7 +3,7 @@
 #include <crtdbg.h>
 #endif
 
-#include "App.h"
+#include "SampleApp.h"
 
 int wmain(int argc, wchar_t** argv, wchar_t** evnp)
 {
@@ -12,8 +12,7 @@ int wmain(int argc, wchar_t** argv, wchar_t** evnp)
 #endif
 
 	// アプリケーションを実行
-	App app(1280, 720);
-	app.Run();
+	SampleApp(960, 540).Run();
 
 	return 0;
 }

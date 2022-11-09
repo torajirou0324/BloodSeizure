@@ -31,7 +31,7 @@ inline void SafeRelease(T*& ptr)
 }
 
 template<typename T>
-inline void SafeTerm(T*&)
+inline void SafeTerm(T*& ptr)
 {
     if (ptr != nullptr)
     {

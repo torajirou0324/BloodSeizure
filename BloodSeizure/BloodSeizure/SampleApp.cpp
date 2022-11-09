@@ -63,7 +63,7 @@ bool SampleApp::OnInit()
         }
 
         // メモリを予約
-        m_pMesh.resize(resMesh.size());
+        //m_pMesh.resize(resMesh.size());
 
         // メッシュ初期化
         for (size_t i = 0; i < resMesh.size(); ++i)
@@ -348,4 +348,74 @@ void SampleApp::OnTerm()
 // 描画処理
 void SampleApp::OnRender()
 {
+    // コマンドリストの記録
+    auto pCmd = m_CommandList.Reset();
+
+    // 書き込み用リソースバリア設定
+    DirectX::TransitionResource(pCmd,
+        m_ColorTarget[m_FrameIndex].GetResource(),
+        D3D12_RESOURCE_STATE_PRESENT,
+        D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+    // ディスクリプタ取得
+    auto handleRTV = m_ColorTarget[m_FrameIndex].GetHandleRTV();
+    auto handleDSV = m_DepthTarget.GetHandleDSV();
+
+    // レンダーターゲットを設定
+    pCmd->OMSetRenderTargets(1, &handleRTV->HandleCPU, FALSE, &handleDSV->HandleCPU);
+
+    // クリアカラー
+    float clearColor[] = { 0.25f,0.25f,0.25f,1.0f };
+
+    // レンダーターゲットをクリア
+    pCmd->ClearRenderTargetView(handleRTV->HandleCPU, clearColor, 0, nullptr);
+
+    // 深度ステンシルビューをクリア
+    pCmd->ClearDepthStencilView(handleDSV->HandleCPU, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+    // 描画処理
+    {
+        ID3D12DescriptorHeap* const pHeaps[] = {
+            m_pPool[POOL_TYPE_RES]->GetHeap()
+        };
+
+        pCmd->SetGraphicsRootSignature(m_pRootSig.Get());
+        pCmd->SetDescriptorHeaps(1, pHeaps);
+        pCmd->SetGraphicsRootConstantBufferView(0, m_Transform[m_FrameIndex]->GetAddress());
+        pCmd->SetGraphicsRootConstantBufferView(1, m_pLight->GetAddress());
+        pCmd->SetPipelineState(m_pPSO.Get());
+        pCmd->RSSetViewports(1, &m_Viewport);
+        pCmd->RSSetScissorRects(1, &m_Scissor);
+
+        for (size_t i = 0; i < m_pMesh.size(); ++i)
+        {
+            // マテリアルIDを取得
+            auto id = m_pMesh[i]->GetMaterialId();
+
+            // 定数バッファを設定
+            pCmd->SetGraphicsRootConstantBufferView(2, m_Material.GetBufferAddress(i));
+
+            // テクスチャを設定
+            pCmd->SetGraphicsRootDescriptorTable(3, m_Material.GetTextureHandle(id, TU_DIFFUSE));
+
+            // メッシュを描画
+            m_pMesh[i]->Draw(pCmd);
+        }
+    }
+
+    // 表示用リソースバリア設定
+    DirectX::TransitionResource(pCmd,
+        m_ColorTarget[m_FrameIndex].GetResource(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
+        D3D12_RESOURCE_STATE_PRESENT);
+
+    // コマンドリストの記録を終了
+    pCmd->Close();
+
+    // コマンドリストを実行
+    ID3D12CommandList* pList[] = { pCmd };
+    m_pQueue->ExecuteCommandLists(1, pList);
+
+    // 画面に表示
+    Present(1);
 }

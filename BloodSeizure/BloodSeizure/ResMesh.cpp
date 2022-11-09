@@ -1,4 +1,6 @@
 #include "ResMesh.h"
+#undef max
+#undef min
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -267,6 +269,8 @@ const D3D12_INPUT_ELEMENT_DESC MeshVertex::InputElements[] = {
     {"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT   ,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
     {"TANGENT" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0}
 };
+const D3D12_INPUT_LAYOUT_DESC MeshVertex::InputLayout = { MeshVertex::InputElements,MeshVertex::InputElementCount };
+static_assert(sizeof(MeshVertex) == 44, "Vertex struct/layout mismatch");
 
 bool LoadMesh(const wchar_t* filename, std::vector<ResMesh>& meshs, std::vector<ResMaterial>& materials)
 {

@@ -160,7 +160,7 @@ void App::MainLoop()
         }
         else
         {
-            //Render();
+            OnRender();
         }
     }
 }
@@ -415,7 +415,7 @@ void App::Present(uint32_t interval)
 }
 
 // ウインドウプロジャー
-LRESULT App::WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
+LRESULT CALLBACK App::WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     auto instance = reinterpret_cast<App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
@@ -426,6 +426,8 @@ LRESULT App::WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
         auto pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lp);
         SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
     }
+    break;
+
     case WM_DESTROY:
     { PostQuitMessage(0); }
     break;

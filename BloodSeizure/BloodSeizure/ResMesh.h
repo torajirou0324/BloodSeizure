@@ -1,5 +1,5 @@
 #pragma once
-
+//#define NOMINMAX
 #include <d3d12.h>
 #include <DirectXMath.h>
 #include <string>
@@ -20,12 +20,12 @@ struct ResMaterial
 class MeshVertex
 {
 public:
-    DirectX::XMFLOAT3 Position;
-    DirectX::XMFLOAT3 Normal;
-    DirectX::XMFLOAT2 TexCoord;
-    DirectX::XMFLOAT3 Tangent;
+    DirectX::XMFLOAT3   Position;
+    DirectX::XMFLOAT3   Normal;
+    DirectX::XMFLOAT2   TexCoord;
+    DirectX::XMFLOAT3   Tangent;
 
-    MeshVertex() = delete;
+    MeshVertex() = default;
 
     MeshVertex(
         DirectX::XMFLOAT3 const& position,
@@ -36,7 +36,7 @@ public:
         , Normal(normal)
         , TexCoord(texcoord)
         , Tangent(tangent)
-    {
+    { /* DO_NOTHING */
     }
 
     static const D3D12_INPUT_LAYOUT_DESC InputLayout;
