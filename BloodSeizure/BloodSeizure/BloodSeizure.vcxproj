@@ -157,6 +157,7 @@
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="SampleApp.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="system.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="DescriptorPool.h" />
     <ClInclude Include="Fence.h" />
     <ClInclude Include="FileUtil.h" />
+    <ClInclude Include="GraphicsEngine.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
@@ -183,6 +185,7 @@
     <ClInclude Include="SampleApp.h" />
     <ClInclude Include="SceneBase.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="system.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="VertexBuffer.h" />

@@ -413,34 +413,3 @@ void App::Present(uint32_t interval)
     // フレーム番号を更新
     m_FrameIndex = m_pSwapChain->GetCurrentBackBufferIndex();
 }
-
-// ウインドウプロジャー
-LRESULT CALLBACK App::WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
-{
-    auto instance = reinterpret_cast<App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-
-    switch (msg)
-    {
-    case WM_CREATE:
-    {
-        auto pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lp);
-        SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
-    }
-    break;
-
-    case WM_DESTROY:
-    { PostQuitMessage(0); }
-    break;
-
-    default:
-    { /* DO_NOTHING */ }
-    break;
-    }
-
-    if (instance != nullptr)
-    {
-        instance->OnMsgProc(hWnd, msg, wp, lp);
-    }
-
-    return DefWindowProc(hWnd, msg, wp, lp);
-}
