@@ -16,7 +16,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		// エンジンの破棄
 		if (g_graphicsEngine != nullptr)
 		{
-			delete g_graphicsEngine;
+			GraphicsEngine::Terminate();
 		}
 		PostQuitMessage(0);
 		break;
@@ -77,7 +77,7 @@ void InitGame(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, in
 	// ウィンドウの初期化
 	InitWindow(hInstance, hPrevInstance, lpCmdLine, nCmdShow, appName);
 	// エンジンの初期化
-	g_graphicsEngine = new GraphicsEngine;
+	GraphicsEngine::Instance();
 	g_graphicsEngine->Init(g_hWnd, FRAME_BUFFER_W, FRAME_BUFFER_H);
 }
 
@@ -99,6 +99,7 @@ bool DispatchWindowMessage()
 		else
 		{
 			// ウィンドウメッセージがからになった
+			break;
 		}
 	}
 	return msg.message != WM_QUIT;

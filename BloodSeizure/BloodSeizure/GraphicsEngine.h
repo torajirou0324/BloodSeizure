@@ -16,6 +16,14 @@
 class GraphicsEngine
 {
 public:
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    GraphicsEngine(){}
+
+    /// <summary>
+    /// デストラクタ
+    /// </summary>
     ~GraphicsEngine();
 
     /// <summary>
@@ -39,20 +47,63 @@ public:
     /// 毎フレームのレンダリング終了時に呼ぶもの
     void EndRender();
 
-    static const int FRAME_BUFFER_COUNT = 2;   // フレームバッファの数
+    GraphicsEngine(const GraphicsEngine&) = delete;             // コピーコンストラクタをdelete指定
+    GraphicsEngine& operator=(const GraphicsEngine&) = delete;  // コピー代入演算子もdelete指定
+    GraphicsEngine(GraphicsEngine&&) = delete;                  // ムーブコンストラクタをdelete指定
+    GraphicsEngine& operator=(GraphicsEngine&&) = delete;       // ムーブ代入演算子もdelete指定
+
+    /// <summary>
+    /// DirectX12のグラフィックエンジンを生成
+    /// </summary>
+    static void Instance()
+    {
+        if (m_pGraphicsEngine != nullptr)
+        {
+            m_pGraphicsEngine = new GraphicsEngine;
+            g_graphicsEngine = m_pGraphicsEngine;
+        }
+    }
+
+    /// <summary>
+    /// DirectX12のグラフィックエンジンを解放
+    /// </summary>
+    static void Terminate()
+    {
+        if (m_pGraphicsEngine)
+        {
+            delete m_pGraphicsEngine;
+            m_pGraphicsEngine = nullptr;
+        }
+    }
+
 private:
+    /// <summary>
+    /// 描画の完了待ち
+    /// </summary>
+    void WaitDraw();
+
+public:
+    /// <summary>
+    /// フレームバッファの数
+    /// </summary>
+    static const int FRAME_BUFFER_COUNT = 2;
+
+private:
+    /// <summary>グラフィックスエンジンのアドレスを格納するメンバ変数</summary>
+    static GraphicsEngine* m_pGraphicsEngine;
+
     /// <summary>Direct3Dデバイス</summary>
-    ID3D12Device* m_d3dDevice = nullptr;
+    ComPtr<ID3D12Device> m_pDevice = nullptr;
     /// <summary>コマンドキュー</summary>
-    ID3D12CommandQueue* m_commandQueue = nullptr;
+    ComPtr<ID3D12CommandQueue> m_pCommandQueue = nullptr;
     /// <summary>スワップチェイン</summary>
-    IDXGISwapChain3* m_swapChain = nullptr;
+    ComPtr<IDXGISwapChain3> m_pSwapChain = nullptr;
     /// <summary>コマンドアロケータ</summary>
-    ID3D12CommandAllocator* m_commandAllocator = nullptr;
+    ComPtr<ID3D12CommandAllocator> m_pCommandAllocator = nullptr;
     /// <summary>コマンドリスト</summary>
-    ID3D12GraphicsCommandList* m_commandList = nullptr;
+    ComPtr<ID3D12GraphicsCommandList> m_pCommandList = nullptr;
     /// <summary>パイプラインステート</summary>
-    ID3D12PipelineState* m_pipelineState = nullptr;
+    ComPtr<ID3D12PipelineState> m_pPipelineState = nullptr;
 
     /// <summary>現在のバックバッファの番号</summary>
     int m_currentBackBufferIndex = 0;
@@ -60,28 +111,38 @@ private:
     UINT m_rtvDescriptorSize = 0;
     /// <summary>深度ステンシルバッファのディスクリプタのサイズ</summary>
     UINT m_dsvDescriptorSize = 0;
-    /// <summary>CBR_SRVのディスクリプタのサイズ</summary>
-    UINT m_cbvSrvDescriptorSize = 0;
+    /// <summary>CBV_SRV_UAVのディスクリプタのサイズ</summary>
+    UINT m_cbvSrvUavDescriptorSize = 0;
     /// <summary>サンプラーのディスクリプタのサイズ</summary>
     UINT m_samplerDescriptorSize = 0;
 
-    /// <summary></summary>
-    ID3D12DescriptorHeap* m_rtvHeap = nullptr;
-    /// <summary></summary>
-    ID3D12Resource* m_renderTargets[FRAME_BUFFER_COUNT] = { nullptr };
-    /// <summary></summary>
-    ID3D12DescriptorHeap* m_dsvHeap = nullptr;
-    /// <summary></summary>
-    ID3D12Resource* m_depthStencilBuffer = nullptr;
-    /// <summary></summary>
-    D3D12_VIEWPORT m_viewport;
-    /// <summary></summary>
-    D3D12_RECT m_scissorRect;
+    /// <summary>レンダーターゲットビューのディスクリプタヒープ</summary>
+    ID3D12DescriptorHeap* m_pRtvHeap = nullptr;
+    /// <summary>フレームバッファ用のレンダーターゲット</summary>
+    ID3D12Resource* m_pRenderTargets[FRAME_BUFFER_COUNT] = { nullptr };
+    /// <summary>深度ステンシルビューのディスクリプタヒープ</summary>
+    ID3D12DescriptorHeap* m_pDsvHeap = nullptr;
+    /// <summary>深度ステンシルバッファ</summary>
+    ID3D12Resource* m_pDepthStencilBuffer = nullptr;
+    /// <summary>ビューポート</summary>
+    D3D12_VIEWPORT m_pViewport;
+    /// <summary>シザリング矩形</summary>
+    D3D12_RECT m_pScissorRect;
 
-    /// <summary></summary>
+    /// <summary>現在書き込み中のフレームバッファのレンダリングターゲットビューのハンドル</summary>
     D3D12_CPU_DESCRIPTOR_HANDLE m_currentFrameBufferRTVHandle;
-    /// <summary></summary>
+    /// <summary>現在書き込み中のフレームバッファの深度ステンシルビューのハンドル</summary>
     D3D12_CPU_DESCRIPTOR_HANDLE m_currentFrameBufferDSVHandle;
+
+    /// <summary>
+    /// GPUとの同期で使用する変数
+    /// </summary>
+    UINT m_frameIndex = 0;
+    HANDLE m_pFenceEvent = nullptr;
+    ID3D12Fence* m_pFence = nullptr;
+    UINT64 m_fenceValue = 0;
+    UINT m_frameBufferWidth = 0;
+    UINT m_frameBufferHeight = 0;
 };
 
 /// <summary>グラフィックスエンジンのアドレスを格納するグローバル変数</summary>
