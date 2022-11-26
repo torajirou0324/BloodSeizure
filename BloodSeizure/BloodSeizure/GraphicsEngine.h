@@ -78,6 +78,12 @@ public:
 
 private:
     /// <summary>
+    /// 画面に表示し、次のフレームの準備を行う
+    /// </summary>
+    /// <param name="interval"></param>
+    void Present(uint32_t interval);
+
+    /// <summary>
     /// 描画の完了待ち
     /// </summary>
     void WaitDraw();
@@ -99,7 +105,7 @@ private:
     /// <summary>スワップチェイン</summary>
     ComPtr<IDXGISwapChain3> m_pSwapChain = nullptr;
     /// <summary>コマンドアロケータ</summary>
-    ComPtr<ID3D12CommandAllocator> m_pCommandAllocator = nullptr;
+    ComPtr<ID3D12CommandAllocator> m_pCommandAllocator[FRAME_BUFFER_COUNT] = { nullptr };
     /// <summary>コマンドリスト</summary>
     ComPtr<ID3D12GraphicsCommandList> m_pCommandList = nullptr;
     /// <summary>パイプラインステート</summary>
@@ -125,9 +131,9 @@ private:
     /// <summary>深度ステンシルバッファ</summary>
     ID3D12Resource* m_pDepthStencilBuffer = nullptr;
     /// <summary>ビューポート</summary>
-    D3D12_VIEWPORT m_pViewport;
+    D3D12_VIEWPORT m_viewport;
     /// <summary>シザリング矩形</summary>
-    D3D12_RECT m_pScissorRect;
+    D3D12_RECT m_scissorRect;
 
     /// <summary>現在書き込み中のフレームバッファのレンダリングターゲットビューのハンドル</summary>
     D3D12_CPU_DESCRIPTOR_HANDLE m_currentFrameBufferRTVHandle;
@@ -138,7 +144,7 @@ private:
     /// GPUとの同期で使用する変数
     /// </summary>
     UINT m_frameIndex = 0;
-    HANDLE m_pFenceEvent = nullptr;
+    HANDLE m_FenceEvent = nullptr;
     ID3D12Fence* m_pFence = nullptr;
     UINT64 m_fenceValue = 0;
     UINT m_frameBufferWidth = 0;

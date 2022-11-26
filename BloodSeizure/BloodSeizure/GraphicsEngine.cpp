@@ -166,7 +166,7 @@ bool GraphicsEngine::Init(HWND hwnd, UINT frameBufferWidth, UINT frameBufferHeig
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL | D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
 
 		// クリア設定
 		D3D12_CLEAR_VALUE clearValue = {};
@@ -195,18 +195,162 @@ bool GraphicsEngine::Init(HWND hwnd, UINT frameBufferWidth, UINT frameBufferHeig
 		Viewdesc.Texture2D.MipSlice = 0;
 		Viewdesc.Flags = D3D12_DSV_FLAG_NONE;
 
+		// ディスクリプタを生成
+		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = m_pDsvHeap->GetCPUDescriptorHandleForHeapStart();
+
 		// 深度ステンシルビューを生成
+		m_pDevice->CreateDepthStencilView(
+			m_pDepthStencilBuffer, &Viewdesc, dsvHandle
+		);
 	}
+
+	// コマンドアロケータの生成
+	for (int i = 0; i < FRAME_BUFFER_COUNT; i++)
+	{
+		auto hr = m_pDevice->CreateCommandAllocator(
+			D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_pCommandAllocator[i])
+		);
+		if (FAILED(hr))
+		{
+			return false;
+		}
+	}
+
+	// コマンドリストの生成
+	{
+		auto hr = m_pDevice->CreateCommandList(
+			1,
+			D3D12_COMMAND_LIST_TYPE_DIRECT,
+			m_pCommandAllocator[0].Get(),
+			nullptr,
+			IID_PPV_ARGS(m_pCommandList.GetAddressOf())
+		);
+		if (FAILED(hr))
+		{
+			return false;
+		}
+
+		// コマンドリストが開かれている状態で作成されるため、一度閉じる
+		m_pCommandList->Close();
+	}
+
+	// フェンスを生成
+	{
+		// イベントを生成(同期を行うときのイベントハンドル)
+		m_FenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (m_FenceEvent == nullptr)
+		{
+			return false;
+		}
+
+		// フェンスを生成
+		auto hr = m_pDevice->CreateFence(
+			0,
+			D3D12_FENCE_FLAG_NONE,
+			IID_PPV_ARGS(&m_pFence)
+		);
+		if (FAILED(hr))
+		{
+			return false;
+		}
+
+		// カウンタを設定
+		m_fenceValue = 1;
+	}
+
+	// ビューポート
+	m_viewport.TopLeftX = 0;
+	m_viewport.TopLeftY = 0;
+	m_viewport.Width = float(frameBufferWidth);
+	m_viewport.Height = float(frameBufferHeight);
+	m_viewport.MinDepth = 0.0f;
+	m_viewport.MaxDepth = 1.0f;
+
+	// シザー矩形
+	m_scissorRect.left = 0;
+	m_scissorRect.top = 0;
+	m_scissorRect.right = frameBufferWidth;
+	m_scissorRect.bottom = frameBufferHeight;
+
+	// CBV_SRV_UAVのディスクリプタサイズを取得
+	m_cbvSrvUavDescriptorSize = m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	// Samplerのディスクリプタサイズを取得
+	m_samplerDescriptorSize = m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
+
 
 	return true;
 }
 
 void GraphicsEngine::BeginRender()
 {
+	m_frameIndex = m_pSwapChain->GetCurrentBackBufferIndex();
+
+	// コマンドリストの記録を開始
+	m_pCommandAllocator[m_frameIndex]->Reset();
+	m_pCommandList->Reset(m_pCommandAllocator[m_frameIndex].Get(), m_pPipelineState.Get());
+	m_pCommandList;
+	m_frameIndex = (m_frameIndex + 1) % uint32_t(FRAME_BUFFER_COUNT);
+
+	// レンダーターゲットビュー分のディスクリプタヒープのアドレスを取得
+	m_currentFrameBufferRTVHandle = m_pRtvHeap->GetCPUDescriptorHandleForHeapStart();
+	m_currentFrameBufferRTVHandle.ptr += m_frameIndex * m_rtvDescriptorSize;
+
+	// 深度ステンシルビューのディスクリプタヒープの開始アドレスを取得
+	m_currentFrameBufferDSVHandle = m_pDsvHeap->GetCPUDescriptorHandleForHeapStart();
+
+	// 描き込み用リソースバリア設定（レンダリングターゲットとして使用可能になるまで待つ）
+	D3D12_RESOURCE_BARRIER barrier = {};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = m_pRenderTargets[m_frameIndex];
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	// バックバッファがレンダリングターゲットとして設定可能になるまで待つ
+	m_pCommandList->ResourceBarrier(1, &barrier);
+
+	// レンダーターゲットを設定
+	m_pCommandList->OMSetRenderTargets(1, &m_currentFrameBufferRTVHandle, FALSE, &m_currentFrameBufferDSVHandle);
+	
+	// クリアカラー
+	float clearColor[] = { 0.25f,0.25f,0.25f,1.0f };
+
+	// レンダーターゲットビューのクリア
+	m_pCommandList->ClearRenderTargetView(m_currentFrameBufferRTVHandle, clearColor, 0, nullptr);
+
+	// デプスステンシルビューのクリア
+	m_pCommandList->ClearDepthStencilView(
+		m_currentFrameBufferDSVHandle,
+		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
+		1.0f,
+		0,
+		0,
+		nullptr
+	);
 }
 
 void GraphicsEngine::EndRender()
 {
+	// レンダーターゲットビューへの描き込み完了待ち
+	D3D12_RESOURCE_BARRIER barrier = {};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = m_pRenderTargets[m_frameIndex];
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	m_pCommandList->ResourceBarrier(1, &barrier);
+
+	// コマンドリストの記録を終了
+	m_pCommandList->Close();
+
+	// コマンドリストを実行
+	ID3D12CommandList* pLists[] = { m_pCommandList.Get() };
+	m_pCommandQueue->ExecuteCommandLists(1, pLists);
+
+	// 画面に表示
+	Present(1);
 }
 
 GraphicsEngine::~GraphicsEngine()
@@ -230,10 +374,14 @@ GraphicsEngine::~GraphicsEngine()
 	{
 		m_pDsvHeap->Release();
 	}
-	if (m_pCommandAllocator)
+	for (int i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
-		m_pCommandAllocator->Release();
+		if (m_pCommandAllocator[i])
+		{
+			m_pCommandAllocator[i]->Release();
+		}
 	}
+
 	if (m_pCommandList)
 	{
 		m_pCommandList->Release();
@@ -262,7 +410,19 @@ GraphicsEngine::~GraphicsEngine()
 		m_pDevice->Release();
 	}
 
-	CloseHandle(m_pFenceEvent);
+	CloseHandle(m_FenceEvent);
+}
+
+void GraphicsEngine::Present(uint32_t interval)
+{
+	// 画面に表示
+	m_pSwapChain->Present(interval, 0);
+
+	// 描画完了待ち
+	WaitDraw();
+
+	// フレーム番号を更新
+	m_frameIndex = m_pSwapChain->GetCurrentBackBufferIndex();
 }
 
 void GraphicsEngine::WaitDraw()
@@ -275,7 +435,7 @@ void GraphicsEngine::WaitDraw()
 	// 前のフレームが終了するまで待ちます。
 	if (m_pFence->GetCompletedValue() < fence)
 	{
-		m_pFence->SetEventOnCompletion(fence, m_pFenceEvent);
-		WaitForSingleObject(m_pFenceEvent, INFINITE);
+		m_pFence->SetEventOnCompletion(fence, m_FenceEvent);
+		WaitForSingleObject(m_FenceEvent, INFINITE);
 	}
 }
