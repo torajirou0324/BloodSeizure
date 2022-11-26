@@ -8,6 +8,7 @@
 
 void Shader::LoadPS(const char* filePath, const char* entryFuncName)
 {
+
 }
 
 void Shader::LoadVS(const char* filePath, const char* entryFuncName)

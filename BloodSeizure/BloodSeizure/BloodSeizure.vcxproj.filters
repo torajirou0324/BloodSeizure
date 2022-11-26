@@ -92,6 +92,9 @@
     <ClCompile Include="GraphicsEngine.cpp">
       <Filter>ソース ファイル\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>ソース ファイル\Shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SceneBase.h">
@@ -171,6 +174,9 @@
     </ClInclude>
     <ClInclude Include="system.h">
       <Filter>ソース ファイル\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>ソース ファイル\Shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

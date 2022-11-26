@@ -158,6 +158,7 @@
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="SampleApp.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="system.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TitleScene.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="SampleApp.h" />
     <ClInclude Include="SceneBase.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TitleScene.h" />
