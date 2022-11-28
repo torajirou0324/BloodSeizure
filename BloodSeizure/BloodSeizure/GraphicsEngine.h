@@ -3,6 +3,7 @@
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <d3dcompiler.h>
+#include <vector>
 #include "ComPtr.h"
 
 #pragma comment( lib, "d3d12.lib" )
@@ -53,6 +54,24 @@ public:
     GraphicsEngine& operator=(GraphicsEngine&&) = delete;       // ムーブ代入演算子もdelete指定
 
     /// <summary>
+    /// D3Dデバイス
+    /// </summary>
+    /// <returns></returns>
+    ID3D12Device* GetD3DDevice()
+    {
+        return m_pDevice.Get();
+    }
+
+    /// <summary>
+    /// バックバッファの番号を取得
+    /// </summary>
+    /// <returns></returns>
+    UINT GetBackBufferIndex() const
+    {
+        return m_frameIndex;
+    }
+
+    /// <summary>
     /// DirectX12のグラフィックエンジンを生成
     /// </summary>
     static void Instance()
@@ -97,6 +116,8 @@ public:
 private:
     /// <summary>グラフィックスエンジンのアドレスを格納するメンバ変数</summary>
     static GraphicsEngine* m_pGraphicsEngine;
+
+    std::vector<ComPtr<ID3D12GraphicsCommandList>> m_pCmdArray;
 
     /// <summary>Direct3Dデバイス</summary>
     ComPtr<ID3D12Device> m_pDevice = nullptr;

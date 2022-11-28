@@ -178,6 +178,12 @@
     <ClInclude Include="Shader.h">
       <Filter>ソース ファイル\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="Math.h">
+      <Filter>ソース ファイル\System</Filter>
+    </ClInclude>
+    <ClInclude Include="DescriptorHeap.h">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -345,9 +345,15 @@ void GraphicsEngine::EndRender()
 	// コマンドリストの記録を終了
 	m_pCommandList->Close();
 
+	ID3D12CommandList* pLists[] = { nullptr };
 	// コマンドリストを実行
-	ID3D12CommandList* pLists[] = { m_pCommandList.Get() };
-	m_pCommandQueue->ExecuteCommandLists(1, pLists);
+	for (int i = 0; i < m_pCmdArray.size(); i++)
+	{
+
+	}
+
+	//ID3D12CommandList* pLists[] = { m_pCommandList.Get() };
+	m_pCommandQueue->ExecuteCommandLists(1, );
 
 	// 画面に表示
 	Present(1);

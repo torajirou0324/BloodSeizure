@@ -1,4 +1,5 @@
 #pragma once
+#include "GraphicsEngine.h"
 
 class Shader
 {
@@ -21,18 +22,9 @@ public:
     /// コンパイル済み頂点シェーダーのデータを取得
     /// </summary>
     /// <returns></returns>
-    ID3DBlob* GetCompiledVSBlob() const
+    ID3DBlob* GetCompiledBlob() const
     {
-        return m_vsBlob;
-    }
-
-    /// <summary>
-    /// コンパイル済みのピクセルシェーダーのデータを取得
-    /// </summary>
-    /// <returns></returns>
-    ID3DBlob* GetCompiledPSBlob() const
-    {
-        return m_psBlob;
+        return m_blob;
     }
 
     /// <summary>
@@ -45,7 +37,14 @@ public:
     }
 
 private:
-    ID3DBlob* m_vsBlob = nullptr;   // コンパイル済みの頂点シェーダーのデータ
-    ID3DBlob* m_psBlob = nullptr;   // コンパイル済みのピクセルシェーダーのデータ
+    /// <summary>
+    /// シェーダーをロード。
+    /// </summary>
+    /// <param name="filePath">ファイルパス</param>
+    /// <param name="entryFuncName">エントリーポイントの関数名。</param>
+    /// <param name="shaderModel">シェーダーモデル</param>
+    void Load(const char* filePath, const char* entryFuncName, const char* shaderModel);
+
+    ID3DBlob* m_blob = nullptr;   // コンパイル済みの頂点シェーダーのデータ
     bool m_isInited = false;        // 初期化済みかどうか
 };

@@ -1,12 +1,8 @@
 #include "ConstantBuffer.h"
-#include "DescriptorPool.h"
+#include <vector>
 
 // コンストラクタ
 ConstantBuffer::ConstantBuffer()
-    : m_pCB(nullptr)
-    , m_pHandle(nullptr)
-    , m_pPool(nullptr)
-    ,m_pMappedPtr(nullptr)
 {
 }
 
@@ -16,20 +12,9 @@ ConstantBuffer::~ConstantBuffer()
     Term();
 }
 
-// 初期化処理
-bool ConstantBuffer::Init(ID3D12Device* pDevice, DescriptorPool* pPool, size_t size)
+void ConstantBuffer::Init(int size, void* srcData)
 {
-    // 引数チェック
-    if (pDevice == nullptr || pPool == nullptr || size == 0)
-    {
-        return false;
-    }
-
-    assert(m_pPool == nullptr);
-    assert(m_pHandle == nullptr);
-
-    m_pPool = pPool;
-    m_pPool->AddRef();
+    m_size = size;
 
     size_t align = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
     UINT64 sizeAligned = (size + (align - 1)) & ~(align - 1); // alignに切り上げる
@@ -57,87 +42,76 @@ bool ConstantBuffer::Init(ID3D12Device* pDevice, DescriptorPool* pPool, size_t s
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     // リソースを生成
-    auto hr = pDevice->CreateCommittedResource(
-        &prop,
-        D3D12_HEAP_FLAG_NONE,
-        &desc,
-        D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr,
-        IID_PPV_ARGS(m_pCB.GetAddressOf())
-    );
-
-    // メモリマッピング
-    hr = m_pCB->Map(0, nullptr, &m_pMappedPtr);
-    if (FAILED(hr))
+    int bufferNum = 0;
+    auto device = g_graphicsEngine->GetD3DDevice();
+    for (auto& cb : m_pConstantBuffer)
     {
-        return false;
+        auto hr = device->CreateCommittedResource(
+            &prop,
+            D3D12_HEAP_FLAG_NONE,
+            &desc,
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            IID_PPV_ARGS(cb.GetAddressOf())
+        );
+
+        {
+            D3D12_RANGE rg = {};
+            rg.Begin = 0;
+            rg.End = 0;
+            cb->Map(0, &rg, reinterpret_cast<void**>(&m_pConstantBufferCPU[bufferNum]));
+        }
+        if (srcData != nullptr)
+        {
+            memcpy(m_pConstantBufferCPU[bufferNum], srcData, m_size);
+        }
+
+        // メモリマッピング
+        hr = cb->Map(0, nullptr, &m_pConstantBufferCPU[bufferNum]);
+
+        bufferNum++;
     }
-
-    m_Desc.BufferLocation = m_pCB->GetGPUVirtualAddress();
-    m_Desc.SizeInBytes = UINT(sizeAligned);
-    m_pHandle = pPool->AllocHandle();
-
-    pDevice->CreateConstantBufferView(&m_Desc, m_pHandle->HandleCPU);
-
-    // 正常終了
-    return true;
 }
 
 // 解放処理
 void ConstantBuffer::Term()
 {
     // メモリマッピングを解除し、定数バッファを解放
-    if (m_pCB != nullptr)
-    {
-        m_pCB->Unmap(0, nullptr);
-        m_pCB.Reset();
-    }
 
     // ビューを破壊
-    if (m_pPool != nullptr)
-    {
-        m_pPool->FreeHandle(m_pHandle);
-        m_pHandle = nullptr;
-    }
 
     // ディスクリプタプールを解放
-    if (m_pPool != nullptr)
+    for (int i = 0; i < 2; i++)
     {
-        m_pPool->Release();
-        m_pPool = nullptr;
+        m_pConstantBufferCPU[i] = nullptr;
     }
 
-    m_pMappedPtr = nullptr;
 }
 
-// GPU仮想アドレスを取得
-D3D12_GPU_VIRTUAL_ADDRESS ConstantBuffer::GetAddress() const
+void ConstantBuffer::RegistConstantBufferView(D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle)
 {
-    return m_Desc.BufferLocation;
+    auto backBufferIndex = g_graphicsEngine->GetBackBufferIndex();
+    RegistConstantBufferView(descriptorHandle, backBufferIndex);
 }
 
-// CPUディスクリプタハンドルを取得
-D3D12_CPU_DESCRIPTOR_HANDLE ConstantBuffer::GetHandleCPU() const
+void ConstantBuffer::RegistConstantBufferView(D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle, int bufferNo)
 {
-    if (m_pHandle == nullptr)
-    {
-        return D3D12_CPU_DESCRIPTOR_HANDLE();
-    }
-    return m_pHandle->HandleCPU;
+    //D3Dデバイスを取得。
+    auto device = g_graphicsEngine->GetD3DDevice();
+    D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
+    desc.BufferLocation = m_pConstantBuffer[bufferNo]->GetGPUVirtualAddress();
+    desc.SizeInBytes = m_alocSize;
+    device->CreateConstantBufferView(&desc, descriptorHandle);
 }
 
-// GPUディスクリプタハンドルを取得
-D3D12_GPU_DESCRIPTOR_HANDLE ConstantBuffer::GetHandleGPU() const
+void ConstantBuffer::CopyToVRAM(void* data)
 {
-    if (m_pHandle == nullptr)
-    {
-        return D3D12_GPU_DESCRIPTOR_HANDLE();
-    }
-    return m_pHandle->HandleGPU;
+    auto backBufferIndex = g_graphicsEngine->GetBackBufferIndex();
+    memcpy(m_pConstantBufferCPU[backBufferIndex], data, m_size);
 }
 
-// メモリマッピング済みポインタを取得
-void* ConstantBuffer::GetPtr() const
+D3D12_GPU_VIRTUAL_ADDRESS ConstantBuffer::GetGPUVirtualAddress()
 {
-    return m_pMappedPtr;
+    auto backBufferIndex = g_graphicsEngine->GetBackBufferIndex();
+    return m_pConstantBuffer[backBufferIndex]->GetGPUVirtualAddress();
 }

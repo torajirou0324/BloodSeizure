@@ -1,50 +1,59 @@
 #pragma once
-
-#include <d3d12.h>
-#include <vector>
-#include "ComPtr.h"
-
-class DescriptorHandle;
-class DescriptorPool;
+#include "GraphicsEngine.h"
 
 class ConstantBuffer
 {
 public:
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
     ConstantBuffer();
+
+    /// <summary>
+    /// デストラクタ
+    /// </summary>
     ~ConstantBuffer();
 
-    // 初期化処理
-    bool Init(ID3D12Device* pDevice, DescriptorPool* pPool, size_t size);
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    /// <param name="size">定数バッファのサイズ</param>
+    /// <param name="srcData">ソースデータ。nullを指定することも可</param>
+    void Init(int size, void* srcData = nullptr);
 
-    // 解放処理
+    /// <summary>
+    /// 解放処理
+    /// </summary>
     void Term();
 
-    // GPU仮想アドレスを取得する
-    D3D12_GPU_VIRTUAL_ADDRESS GetAddress() const;
+    /// <summary>
+    /// ディスクリプタヒープにConstantBufferViewを登録。
+    /// </summary>
+    /// <param name="descriptorHandle"></param>
+    void RegistConstantBufferView(D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle);
+    void RegistConstantBufferView(D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle, int bufferNo);
 
-    // CPUディスクリプタハンドルを取得
-    D3D12_CPU_DESCRIPTOR_HANDLE GetHandleCPU() const;
+    /// <summary>
+    /// GPU仮想アドレスを取得する
+    /// </summary>
+    /// <returns></returns>
+    D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
 
-    // GPUディスクリプタハンドルを取得
-    D3D12_GPU_DESCRIPTOR_HANDLE GetHandleGPU() const;
-
-    // メモリマッピング済みポインタを取得
-    void* GetPtr() const;
-
-    // メモリマッピング済みポインタを取得
-    template<typename T>
-    T* GetPtr()
+    /// <summary>
+    /// データをVRAMにコピーする
+    /// </summary>
+    /// <param name="data"></param>
+    void CopyToVRAM(void* data);
+    template<class T>
+    void CopyToVRAM(T& data)
     {
-        return reinterpret_cast<T*>(GetPtr());
+        CopyToVRAM(&data)
     }
 
 private:
-    ComPtr<ID3D12Resource>          m_pCB;          // 定数バッファ
-    DescriptorHandle*               m_pHandle;      // ディスクリプタハンドル
-    DescriptorPool*                 m_pPool;        // ディスクリプタプール
-    D3D12_CONSTANT_BUFFER_VIEW_DESC m_Desc;         // 定数バッファビュー構造体
-    void*                           m_pMappedPtr;   // マップ済みポインタ
-
-    ConstantBuffer(const ConstantBuffer&) = delete;
-    void operator = (const ConstantBuffer&) = delete;
+    ComPtr<ID3D12Resource>          m_pConstantBuffer[2] = { nullptr };         // 定数バッファ
+    void*                           m_pConstantBufferCPU[2] = { nullptr };      // マップ済みポインタ
+    D3D12_CONSTANT_BUFFER_VIEW_DESC m_Desc;                                     // 定数バッファビュー構造体
+    int                             m_size = 0;                                 // 定数バッファサイズ
+    int                             m_alocSize = 0;                             // 
 };
