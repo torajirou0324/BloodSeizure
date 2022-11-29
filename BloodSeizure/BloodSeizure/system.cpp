@@ -1,6 +1,7 @@
 #include "system.h"
 
-HWND g_hWnd = NULL;     // ウィンドウのハンドル
+HWND		g_hWnd = NULL;		// ウィンドウのハンドル
+HINSTANCE	g_hInst = NULL;		// インスタンスハンドル
 
 /////////////////////////////////////////////////
 // メッセージプロシージャー
@@ -27,34 +28,48 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-/// <summary>
-/// ウィンドウの初期化
-/// </summary>
-void InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow, const TCHAR* appName)
+/////////////////////////////////////////////////
+// ウィンドウの初期化
+/////////////////////////////////////////////////
+void InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
+	// インスタンスハンドルを取得
+	auto hInst = GetModuleHandle(nullptr);
+
 	// ウィンドウクラスのパラメータを設定(構造体の変数の初期化)
-	WNDCLASSEX wc =
-	{
-		sizeof(WNDCLASSEX),		// 構造体のサイズ
-		CS_CLASSDC,				// ウィンドウスタイル
-		MsgProc,				// メッセージプロシージャ
-		0,						// 
-		0,						// 
-		GetModuleHandle(NULL),	// このクラスのためのウィンドウプロシージャがあるインスタンスハンドル
-		NULL,					// アイコンのハンドル
-		NULL,					// マウスカーソルのハンドル。NULLなのでデフォルト
-		NULL,					// ウィンドウの背景色。NULLなのでデフォルト
-		NULL,					// メニュー名。
-		appName,				// ウィンドウクラスに付ける名前
-		NULL					// 
-	};
+	WNDCLASSEX wc = {};
+	wc.cbSize			= sizeof(WNDCLASSEX);					// 構造体のサイズ
+	wc.style			= CS_CLASSDC;							// ウィンドウスタイル
+	wc.lpfnWndProc		= MsgProc;								// メッセージプロシージャ
+	wc.cbClsExtra		= 0;									// 
+	wc.cbWndExtra		= 0;									// 
+	wc.hInstance		= hInst;								// このクラスのためのウィンドウプロシージャがあるインスタンスハンドル
+	wc.hIcon			= LoadIcon(hInst, IDI_APPLICATION);		// アイコンのハンドル
+	wc.hCursor			= LoadCursor(hInst, IDC_ARROW);			// マウスカーソルのハンドル。NULLなのでデフォルト
+	wc.hbrBackground	= GetSysColorBrush(COLOR_BACKGROUND);	// ウィンドウの背景色。NULLなのでデフォルト
+	wc.lpszMenuName		= NULL;									// メニュー名。
+	wc.lpszClassName	= CLASS_NAME;								// ウィンドウクラスに付ける名前
+	wc.hIconSm			= LoadIcon(hInst, IDI_APPLICATION);		// 
+	
 	// ウィンドウクラスの登録
 	RegisterClassEx(&wc);
 
+	// インスタンスハンドル設定
+	g_hInst = hInst;
+
+	// ウィンドウのサイズを設定
+	RECT rc = {};
+	rc.right = static_cast<LONG>(FRAME_BUFFER_W);
+	rc.bottom = static_cast<LONG>(FRAME_BUFFER_H);
+
+	// ウィンドウサイズを調整
+	auto style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+	AdjustWindowRect(&rc, style, FALSE);
+
 	// ウィンドウクラスの作成
 	g_hWnd = CreateWindow(
-		appName,				// 使用するウィンドウクラスの名前
-		appName,				// ウィンドウの名前。ウィンドウクラスの名前と別名でもよい
+		CLASS_NAME,				// 使用するウィンドウクラスの名前
+		CLASS_NAME,				// ウィンドウの名前。ウィンドウクラスの名前と別名でもよい
 		WS_OVERLAPPEDWINDOW,	// ウィンドウスタイル。
 		0,						// ウィンドウの初期X座標
 		0,						// ウィンドウの初期Y座標
@@ -62,29 +77,37 @@ void InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, 
 		FRAME_BUFFER_H,			// ウィンドウの高さ
 		NULL,					// 親ウィンドウ
 		NULL,					// メニュー
-		hInstance,				// アプリケーションのインスタンス
+		g_hInst,				// アプリケーションのインスタンス
 		NULL					// 
 	);
 
 	ShowWindow(g_hWnd, nCmdShow);
 }
 
-/// <summary>
-/// ゲームの初期化
-/// </summary>
-void InitGame(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow, const TCHAR* appName)
+void InitGame(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	// ウィンドウの初期化
-	InitWindow(hInstance, hPrevInstance, lpCmdLine, nCmdShow, appName);
+	InitWindow(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 	// エンジンの初期化
 	GraphicsEngine::Instance();
 	g_graphicsEngine->Init(g_hWnd, FRAME_BUFFER_W, FRAME_BUFFER_H);
 }
 
-/// <summary>
-/// ウィンドウメッセージをディスパッチ。
-/// </summary>
-/// <returns>falseが返ってきたら、ゲーム終了。</returns>
+void TermGame()
+{
+	// DirectX3D 12の終了処理
+	g_graphicsEngine->Terminate();
+
+	// ウィンドウの登録解除
+	if (g_hInst != nullptr)
+	{
+		UnregisterClass(CLASS_NAME, g_hInst);
+	}
+
+	g_hInst = nullptr;
+	g_hWnd = nullptr;
+}
+
 bool DispatchWindowMessage()
 {
 	MSG msg = { 0 };

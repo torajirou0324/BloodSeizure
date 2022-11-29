@@ -1,15 +1,26 @@
 #pragma once
 #include "GraphicsEngine.h"
-#include "DirectXHelpers.h"
-#include "SimpleMath.h"
+#include <SimpleMath.h>
 
-// ゲームの初期化
-void InitGame(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow, const TCHAR* appName);
-// ウィンドウメッセージをディスパッチ。falseが帰ってきたらゲーム終了
+/// <summary>
+/// エンジンの初期化
+/// </summary>
+void InitGame(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
+
+/// <summary>
+/// エンジンの終了処理
+/// </summary>
+void TermGame();
+
+/// <summary>
+/// ウィンドウメッセージをディスパッチ。
+/// </summary>
+/// <returns>falseが返ってきたら、ゲーム終了。</returns>
 bool DispatchWindowMessage();
 
-const UINT FRAME_BUFFER_W = 1920;   // 画面の横幅
-const UINT FRAME_BUFFER_H = 1080;   // 画面の縦幅
+const UINT FRAME_BUFFER_W = 1920;                   // 画面の横幅
+const UINT FRAME_BUFFER_H = 1080;                   // 画面の縦幅
+const TCHAR* CLASS_NAME = TEXT("BloodSeizure");     // クラスの名前
 
 // GPUで使用する行列をまとめた構造体
 struct Transform

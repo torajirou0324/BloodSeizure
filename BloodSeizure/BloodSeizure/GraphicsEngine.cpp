@@ -284,12 +284,9 @@ bool GraphicsEngine::Init(HWND hwnd, UINT frameBufferWidth, UINT frameBufferHeig
 
 void GraphicsEngine::BeginRender()
 {
-	m_frameIndex = m_pSwapChain->GetCurrentBackBufferIndex();
-
 	// コマンドリストの記録を開始
 	m_pCommandAllocator[m_frameIndex]->Reset();
 	m_pCommandList->Reset(m_pCommandAllocator[m_frameIndex].Get(), m_pPipelineState.Get());
-	m_pCommandList;
 	m_frameIndex = (m_frameIndex + 1) % uint32_t(FRAME_BUFFER_COUNT);
 
 	// レンダーターゲットビュー分のディスクリプタヒープのアドレスを取得
@@ -346,14 +343,9 @@ void GraphicsEngine::EndRender()
 	m_pCommandList->Close();
 
 	ID3D12CommandList* pLists[] = { nullptr };
-	// コマンドリストを実行
-	for (int i = 0; i < m_pCmdArray.size(); i++)
-	{
-
-	}
 
 	//ID3D12CommandList* pLists[] = { m_pCommandList.Get() };
-	m_pCommandQueue->ExecuteCommandLists(1, );
+	m_pCommandQueue->ExecuteCommandLists(1, pLists);
 
 	// 画面に表示
 	Present(1);
@@ -387,7 +379,6 @@ GraphicsEngine::~GraphicsEngine()
 			m_pCommandAllocator[i]->Release();
 		}
 	}
-
 	if (m_pCommandList)
 	{
 		m_pCommandList->Release();

@@ -4,8 +4,8 @@
 
 int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine, int nCmdShow)
 {
-	// ゲームの初期化
-	InitGame(hInstance, hPrevInstance, lpCmdLine, nCmdShow, TEXT("BloodSeizure"));
+	// ゲームの初期化処理
+	InitGame(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 	// ゲームループ
 	while (DispatchWindowMessage())
@@ -18,6 +18,9 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 		// 1フレームの終了（表画面と裏画面を入れ替える）
 		g_graphicsEngine->EndRender();
 	}
+
+	// ゲームの終了処理
+	TermGame();
 
 	return 0;
 }

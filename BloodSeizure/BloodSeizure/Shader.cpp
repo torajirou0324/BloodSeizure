@@ -1,5 +1,4 @@
 #include "Shader.h"
-#include <DirectXHelpers.h>
 #include <stierr.h>
 #include <sstream>
 #include <fstream>

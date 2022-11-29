@@ -117,8 +117,6 @@ private:
     /// <summary>グラフィックスエンジンのアドレスを格納するメンバ変数</summary>
     static GraphicsEngine* m_pGraphicsEngine;
 
-    std::vector<ComPtr<ID3D12GraphicsCommandList>> m_pCmdArray;
-
     /// <summary>Direct3Dデバイス</summary>
     ComPtr<ID3D12Device> m_pDevice = nullptr;
     /// <summary>コマンドキュー</summary>
