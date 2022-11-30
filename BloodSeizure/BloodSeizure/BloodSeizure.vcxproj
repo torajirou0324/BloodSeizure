@@ -139,7 +139,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
+    <ClCompile Include="App.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ColorTarget.cpp" />
     <ClCompile Include="CommandList.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
@@ -156,7 +158,9 @@
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="ResMesh.cpp" />
     <ClCompile Include="ResultScene.cpp" />
-    <ClCompile Include="SampleApp.cpp" />
+    <ClCompile Include="SampleApp.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="system.cpp" />
@@ -165,7 +169,9 @@
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h" />
+    <ClInclude Include="App.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="ColorTarget.h" />
     <ClInclude Include="CommandList.h" />
     <ClInclude Include="ComPtr.h" />
@@ -184,9 +190,12 @@
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="Pool.h" />
     <ClInclude Include="ReleaseProcess.h" />
+    <ClInclude Include="RenderContext.h" />
     <ClInclude Include="ResMesh.h" />
     <ClInclude Include="ResultScene.h" />
-    <ClInclude Include="SampleApp.h" />
+    <ClInclude Include="SampleApp.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="SceneBase.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
