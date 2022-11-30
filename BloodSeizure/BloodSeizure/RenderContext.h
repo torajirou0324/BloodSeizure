@@ -68,7 +68,10 @@ public:
         m_pCommandList = commandList;
     }
 
+    void SetPipelineState()
+    {
 
+    }
 
 private:
     enum { MAX_DESCRIPTOR_HEAP = 4 };   // ディスクリプタヒープの最大数
