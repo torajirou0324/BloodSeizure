@@ -95,6 +95,12 @@
     <ClCompile Include="Shader.cpp">
       <Filter>ソース ファイル\Shader</Filter>
     </ClCompile>
+    <ClCompile Include="PipelineState.cpp">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="RootSignature.cpp">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SceneBase.h">
@@ -185,6 +191,12 @@
       <Filter>ソース ファイル\Engine</Filter>
     </ClInclude>
     <ClInclude Include="RenderContext.h">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="PipelineState.h">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="RootSignature.h">
       <Filter>ソース ファイル\Engine</Filter>
     </ClInclude>
   </ItemGroup>

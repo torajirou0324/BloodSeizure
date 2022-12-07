@@ -5,6 +5,7 @@
 #include <d3dcompiler.h>
 #include <vector>
 #include "ComPtr.h"
+#include "RenderContext.h"
 
 #pragma comment( lib, "d3d12.lib" )
 #pragma comment( lib, "dxgi.lib" )
@@ -69,6 +70,15 @@ public:
     UINT GetBackBufferIndex() const
     {
         return m_frameIndex;
+    }
+
+    /// <summary>
+    /// レンダリングコンテキストを取得
+    /// </summary>
+    /// <returns></returns>
+    RenderContext& GetRenderContext()
+    {
+        return m_renderContext;
     }
 
     /// <summary>
@@ -153,6 +163,8 @@ private:
     D3D12_VIEWPORT m_viewport;
     /// <summary>シザリング矩形</summary>
     D3D12_RECT m_scissorRect;
+    /// <summary>レンダリングコンテキスト</summary>
+    RenderContext m_renderContext;
 
     /// <summary>現在書き込み中のフレームバッファのレンダリングターゲットビューのハンドル</summary>
     D3D12_CPU_DESCRIPTOR_HANDLE m_currentFrameBufferRTVHandle;

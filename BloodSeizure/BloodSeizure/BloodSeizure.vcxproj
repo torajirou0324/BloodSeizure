@@ -154,10 +154,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PipelineState.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="ResMesh.cpp" />
     <ClCompile Include="ResultScene.cpp" />
+    <ClCompile Include="RootSignature.cpp" />
     <ClCompile Include="SampleApp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -186,6 +188,7 @@
     <ClInclude Include="Material.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="PipelineState.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="Pool.h" />
@@ -193,6 +196,7 @@
     <ClInclude Include="RenderContext.h" />
     <ClInclude Include="ResMesh.h" />
     <ClInclude Include="ResultScene.h" />
+    <ClInclude Include="RootSignature.h" />
     <ClInclude Include="SampleApp.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>

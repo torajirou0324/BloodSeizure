@@ -4,9 +4,6 @@
 #include <ResourceUploadBatch.h>
 #include "ComPtr.h"
 
-class DescriptorHandle;
-class DescriptorPool;
-
 class Texture
 {
 public:

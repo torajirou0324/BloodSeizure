@@ -4,8 +4,7 @@
 #include "ConstantBuffer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
-
-class Texture;
+#include "RootSignature.h"
 
 /// <summary>
 /// レンダリングコンテキスト
@@ -16,12 +15,12 @@ public:
     /// <summary>
     /// コンストラクタ
     /// </summary>
-    RenderContext();
+    RenderContext(){}
 
     /// <summary>
     /// デストラクタ
     /// </summary>
-    ~RenderContext();
+    ~RenderContext(){}
 
     /// <summary>
     /// 初期化。
@@ -66,6 +65,62 @@ public:
     void SetCommandList(ID3D12GraphicsCommandList* commandList)
     {
         m_pCommandList = commandList;
+    }
+
+    /// <summary>
+    /// ビューポートとシザリング矩形を設定
+    /// </summary>
+    /// <param name="viewport">ビューポート</param>
+    void SetViewportAndScissor(D3D12_VIEWPORT& viewport)
+    {
+        // シザリング矩形設定
+        D3D12_RECT rect;
+        rect.bottom = static_cast<LONG>(viewport.Height);
+        rect.top = 0;
+        rect.left = 0;
+        rect.right = static_cast<LONG>(viewport.Width);
+        SetScissorRect(rect);
+
+        m_pCommandList->RSSetViewports(1, &viewport);
+        m_currentViewport = viewport;
+    }
+
+    /// <summary>
+    /// ビューポートを取得。
+    /// </summary>
+    /// <returns></returns>
+    D3D12_VIEWPORT GetViewport() const
+    {
+        return m_currentViewport;
+    }
+
+    /// <summary>
+    /// シザリング矩形を設定
+    /// </summary>
+    /// <param name="rect"></param>
+    void SetScissorRect(D3D12_RECT& rect)
+    {
+        m_pCommandList->RSSetScissorRects(1, &rect);
+    }
+
+    /// <summary>
+    /// ルートシグネチャを設定。
+    /// </summary>
+    void SetRootSignature(ID3D12RootSignature* rootSignature)
+    {
+        m_pCommandList->SetGraphicsRootSignature(rootSignature);
+    }
+    void SetRootSignature(RootSignature& rootSignature)
+    {
+        m_pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+    }
+    void SetComputeRootSignature(ID3D12RootSignature* rootSignature)
+    {
+        m_pCommandList->SetComputeRootSignature(rootSignature);
+    }
+    void SetComputeRootSignature(RootSignature& rootSignature)
+    {
+        m_pCommandList->SetComputeRootSignature(rootSignature.Get());
     }
 
     void SetPipelineState()

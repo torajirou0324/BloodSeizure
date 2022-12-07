@@ -1,5 +1,9 @@
 #pragma once
 #include "GraphicsEngine.h"
+#include "RootSignature.h"
+#include "Shader.h"
+#include "PipelineState.h"
+
 #include <SimpleMath.h>
 
 /// <summary>
