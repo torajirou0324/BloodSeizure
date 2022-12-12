@@ -1,167 +1,9 @@
 #include "Texture.h"
 #include <DDSTextureLoader.h>
-#include "DescriptorPool.h"
 
-// コンストラクタ
-Texture::Texture()
-    : m_pTex(nullptr)
-    , m_pHandle(nullptr)
-    , m_pPool(nullptr)
-{
-}
-
-// デストラクタ
-Texture::~Texture()
-{
-    Term();
-}
-
-// 初期化処理
-bool Texture::Init(ID3D12Device* pDevice, DescriptorPool* pPool, const wchar_t* filename, DirectX::ResourceUploadBatch& batch)
-{
-    // 引数チェック
-    if (pDevice == nullptr || pPool == nullptr || filename == nullptr)
-    {
-        return false;
-    }
-
-    assert(m_pPool == nullptr);
-    assert(m_pHandle == nullptr);
-
-    // ディスクリプタプールを指定
-    m_pPool = pPool;
-    m_pPool->AddRef();
-
-    // ディスクリプタハンドルを取得
-    m_pHandle = pPool->AllocHandle();
-    if (m_pHandle == nullptr)
-    {
-        return false;
-    }
-
-    // ファイルからテクスチャを生成
-    bool isCube = false;
-    auto hr = DirectX::CreateDDSTextureFromFile(
-        pDevice,
-        batch,
-        filename,
-        m_pTex.GetAddressOf(),
-        true,
-        0,
-        nullptr,
-        &isCube
-    );
-    if (FAILED(hr))
-    {
-        return false;
-    }
-
-    // シェーダーリソースビューの設定を取得
-    auto ViewDesc = GetViewDesc(isCube);
-
-    // シェーダーリソースビューを生成
-    pDevice->CreateShaderResourceView(m_pTex.Get(), &ViewDesc, m_pHandle->HandleCPU);
-
-    // 正常終了
-    return true;
-}
-
-bool Texture::Init(ID3D12Device* pDevice, DescriptorPool* pPool, const D3D12_RESOURCE_DESC* pDesc, bool isCube)
-{
-    // 引数チェック
-    if (pDevice == nullptr || pPool == nullptr || pDesc == nullptr)
-    {
-        return false;
-    }
-
-    assert(m_pPool == nullptr);
-    assert(m_pHandle == nullptr);
-
-    // ディスクリプタプールを設定
-    m_pPool = pPool;
-    m_pPool->AddRef();
-
-    // ディスクリプタハンドルを取得
-    m_pHandle = pPool->AllocHandle();
-    if (m_pHandle == nullptr)
-    {
-        return false;
-    }
-
-    D3D12_HEAP_PROPERTIES prop = {};
-    prop.Type = D3D12_HEAP_TYPE_DEFAULT;
-    prop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-    prop.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-    prop.CreationNodeMask = 0;
-    prop.VisibleNodeMask = 0;
-
-    auto hr = pDevice->CreateCommittedResource(
-        &prop,
-        D3D12_HEAP_FLAG_NONE,
-        pDesc,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        nullptr,
-        IID_PPV_ARGS(m_pTex.GetAddressOf())
-    );
-    if (FAILED(hr))
-    {
-        return false;
-    }
-
-    // シェーダーリソースビューの設定
-    auto ViewDesc = GetViewDesc(isCube);
-
-    // シェーダーリソースビューを生成
-    pDevice->CreateShaderResourceView(m_pTex.Get(), &ViewDesc, m_pHandle->HandleCPU);
-
-    // 正常終了
-    return true;
-}
-
-// 解放処理
-void Texture::Term()
-{
-    m_pTex.Reset();
-
-    // ディスクリプタハンドルを解放
-    if (m_pHandle != nullptr && m_pPool != nullptr)
-    {
-        m_pPool->FreeHandle(m_pHandle);
-        m_pHandle = nullptr;
-    }
-
-    // ディスクリププールを解放
-    if (m_pPool != nullptr)
-    {
-        m_pPool->Release();
-        m_pPool = nullptr;
-    }
-}
-
-// CPUディスクリプタハンドルを取得
-D3D12_CPU_DESCRIPTOR_HANDLE Texture::GetHandleCPU() const
-{
-    if (m_pHandle != nullptr)
-    {
-        return m_pHandle->HandleCPU;
-    }
-    return D3D12_CPU_DESCRIPTOR_HANDLE();
-}
-
-// GPUディスクリプタハンドルを取得
-D3D12_GPU_DESCRIPTOR_HANDLE Texture::GetHandleGPU() const
-{
-    if (m_pHandle != nullptr)
-    {
-        m_pHandle->HandleGPU;
-    }
-    return D3D12_GPU_DESCRIPTOR_HANDLE();
-}
-
-// シェーダーリソースの設定を取得
 D3D12_SHADER_RESOURCE_VIEW_DESC Texture::GetViewDesc(bool isCube)
 {
-    auto desc = m_pTex->GetDesc();
+    auto desc = m_pTexture->GetDesc();
     D3D12_SHADER_RESOURCE_VIEW_DESC ViewDesc = {};
 
     ViewDesc.Format = desc.Format;
@@ -278,4 +120,94 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Texture::GetViewDesc(bool isCube)
         break;
     }
     return ViewDesc;
+}
+
+void Texture::InitDDSFile(const wchar_t* filePath)
+{
+    // テクスチャをロード
+    LoadTextureFromDDSFile(filePath);
+}
+
+void Texture::InitMemory(const char* memory, unsigned int size)
+{
+    // テクスチャをロード
+    LoadTextureFromMemory(memory, size);
+}
+
+void Texture::InitD3DResource(ID3D12Resource* texture)
+{
+    if (m_pTexture)
+    {
+        m_pTexture->Release();
+    }
+    m_pTexture = texture;
+    m_pTexture->AddRef();
+    m_textureDesc = m_pTexture->GetDesc();
+}
+
+void Texture::SetShaderResourceView(D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle, int bufferNo)
+{
+    if (m_pTexture)
+    {
+        auto device = g_graphicsEngine->GetD3DDevice();
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format                  = m_textureDesc.Format;
+        srvDesc.ViewDimension           = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels     = m_textureDesc.MipLevels;
+        device->CreateShaderResourceView(m_pTexture, &srvDesc, descriptorHandle);
+    }
+}
+
+void Texture::LoadTextureFromDDSFile(const wchar_t* filePath)
+{
+    auto device = g_graphicsEngine->GetD3DDevice();
+    DirectX::ResourceUploadBatch re(device);
+    re.Begin();
+    ID3D12Resource* texture;
+    auto hr = DirectX::CreateDDSTextureFromFileEx(
+        device,
+        re,
+        filePath,
+        0,
+        D3D12_RESOURCE_FLAG_NONE,
+        DirectX::DDS_LOADER_FLAGS::DDS_LOADER_DEFAULT,
+        &texture
+    );
+    re.End(g_graphicsEngine->GetCommandQueue());
+
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+    m_pTexture = texture;
+    m_textureDesc = m_pTexture->GetDesc();
+}
+
+void Texture::LoadTextureFromMemory(const char* memory, unsigned int size)
+{
+    auto device = g_graphicsEngine->GetD3DDevice();
+    DirectX::ResourceUploadBatch re(device);
+    re.Begin();
+    ID3D12Resource* texture;
+    auto hr = DirectX::CreateDDSTextureFromMemoryEx(
+        device,
+        re,
+        (const uint8_t*)memory,
+        size,
+        0,
+        D3D12_RESOURCE_FLAG_NONE,
+        DirectX::DDS_LOADER_DEFAULT,
+        &texture
+    );
+
+    re.End(g_graphicsEngine->GetCommandQueue());
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+    m_pTexture = texture;
+    m_textureDesc = m_pTexture->GetDesc();
 }

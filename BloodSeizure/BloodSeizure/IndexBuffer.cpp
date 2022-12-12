@@ -16,7 +16,7 @@ void IndexBuffer::Init(int size, int stride)
     int sizeInBytes = 0;
     if (stride == 2)
     {
-        sizeInBytes == size * 2;
+        sizeInBytes = size * 2;
     }
     {
         sizeInBytes = size;

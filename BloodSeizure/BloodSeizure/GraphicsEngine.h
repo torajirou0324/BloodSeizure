@@ -81,6 +81,15 @@ public:
         return m_renderContext;
     }
 
+    /// <summary>
+    /// コマンドキューを取得
+    /// </summary>
+    /// <returns></returns>
+    ID3D12CommandQueue* GetCommandQueue() const
+    {
+        return m_pCommandQueue.Get();
+    }
+
 private:
     /// <summary>
     /// 画面に表示し、次のフレームの準備を行う

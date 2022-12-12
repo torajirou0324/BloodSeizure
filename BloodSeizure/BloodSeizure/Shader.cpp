@@ -1,8 +1,6 @@
 #include "Shader.h"
-#include <stierr.h>
-#include <sstream>
-#include <fstream>
-#include <atlbase.h>
+#include <string>
+#include "FileUtil.h"
 
 namespace {
 	const char* g_vsShaderModelName = "vs_5_0";	//頂点シェーダーのシェーダーモデル名。
@@ -12,41 +10,23 @@ namespace {
 
 void Shader::Load(const char* filePath, const char* entryFuncName, const char* shaderModel)
 {
-	ID3DBlob* errorBlob;
-#ifdef _DEBUG
-	// Enable better shader debugging with the graphics debugging tools.
-	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else
-	UINT compileFlags = 0;
-#endif
-	wchar_t wfxFilePath[256] = { L"" };
-	mbstowcs(wfxFilePath, filePath, 256);
 
-	auto hr = D3DCompileFromFile(wfxFilePath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entryFuncName, shaderModel, compileFlags, 0, &m_blob, &errorBlob);
 
-	if (FAILED(hr)) {
-		if (hr == STIERR_OBJECTNOTFOUND) {
-			std::wstring errorMessage;
-			errorMessage = L"指定されたfxファイルが開けませんでした。";
-			errorMessage += wfxFilePath;
-			MessageBoxW(nullptr, errorMessage.c_str(), L"エラー", MB_OK);
-		}
-		if (errorBlob) {
-			static char errorMessage[10 * 1024];
-			sprintf_s(errorMessage, "filePath : %ws, %s", wfxFilePath, (char*)errorBlob->GetBufferPointer());
-			MessageBoxA(NULL, errorMessage, "シェーダーコンパイルエラー", MB_OK);
-			return;
-		}
-	}
 	m_isInited = true;
 }
 
-void Shader::LoadPS(const char* filePath, const char* entryFuncName)
+void Shader::LoadPS(const wchar_t* filePath)
 {
-	Load(filePath, entryFuncName, g_psShaderModelName);
+	std::wstring psPath;
+	SearchFilePath(filePath, psPath);
+
+	D3DReadFileToBlob(psPath.c_str(), &m_blob);
 }
 
-void Shader::LoadVS(const char* filePath, const char* entryFuncName)
+void Shader::LoadVS(const wchar_t* filePath)
 {
-	Load(filePath, entryFuncName, g_vsShaderModelName);
+	std::wstring vsPath;
+	SearchFilePath(filePath, vsPath);
+
+	D3DReadFileToBlob(vsPath.c_str(), &m_blob);
 }

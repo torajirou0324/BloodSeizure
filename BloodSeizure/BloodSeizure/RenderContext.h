@@ -1,9 +1,9 @@
 #pragma once
-#include <vector>
 #include "GraphicsEngine.h"
 #include "ConstantBuffer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "Texture.h"
 #include "RootSignature.h"
 #include "PipelineState.h"
 
@@ -36,18 +36,20 @@ public:
     /// 頂点バッファの設定
     /// </summary>
     /// <param name="vb">頂点バッファ</param>
-    void SetVertexBuffer(VertexBuffer vb)
+    void SetVertexBuffer(VertexBuffer& vb)
     {
-        m_pCommandList->IASetVertexBuffers(0, 1, &vb.GetView());
+        auto vertexBufferDesc = vb.GetView();
+        m_pCommandList->IASetVertexBuffers(0, 1, &vertexBufferDesc);
     }
 
     /// <summary>
     /// インデックスバッファの設定
     /// </summary>
     /// <param name="ib">インデックスバッファ</param>
-    void SetIndexBuffer(IndexBuffer ib)
+    void SetIndexBuffer(IndexBuffer& ib)
     {
-        m_pCommandList->IASetIndexBuffer(&ib.GetView());
+        auto indexBufferDesc = ib.GetView();
+        m_pCommandList->IASetIndexBuffer(&indexBufferDesc);
     }
 
     /// <summary>
@@ -113,7 +115,8 @@ public:
     }
     void SetRootSignature(RootSignature& rootSignature)
     {
-        m_pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+        auto ptrRootSig = rootSignature.Get();
+        m_pCommandList->SetGraphicsRootSignature(ptrRootSig);
     }
     void SetComputeRootSignature(ID3D12RootSignature* rootSignature)
     {
@@ -121,7 +124,8 @@ public:
     }
     void SetComputeRootSignature(RootSignature& rootSignature)
     {
-        m_pCommandList->SetComputeRootSignature(rootSignature.Get());
+        auto ptrRootSig = rootSignature.Get();
+        m_pCommandList->SetComputeRootSignature(ptrRootSig);
     }
 
     /// <summary>
@@ -133,7 +137,8 @@ public:
     }
     void SetPipelineState(PipelineState& pipelineState)
     {
-        m_pCommandList->SetPipelineState(pipelineState.Get());
+        auto PSO = pipelineState.Get();
+        m_pCommandList->SetPipelineState(PSO);
     }
 
     /// <summary>
@@ -164,6 +169,6 @@ private:
     ID3D12GraphicsCommandList* m_pCommandList;                              // コマンドリスト
     ID3D12DescriptorHeap* m_pDescriptorHeaps[MAX_DESCRIPTOR_HEAP];          // ディスクリプタヒープの配列
     ConstantBuffer* m_pConstantBuffers[MAX_CONSTANT_BUFFER] = { nullptr };  // 定数バッファの配列
-    //Texture* m_pTextures[MAX_SHADER_RESOURCE] = { nullptr };                // シェーダーリソースの配列
+    Texture* m_pTextures[MAX_SHADER_RESOURCE] = { nullptr };                // シェーダーリソースの配列
     std::vector<ComPtr<ID3D12Resource>> m_scratchResourceList;              // スクラッチリソース
 };

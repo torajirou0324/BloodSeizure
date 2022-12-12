@@ -23,8 +23,8 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 	rootSignature.Init(&param, 0);
 
 	Shader vs, ps;
-	vs.LoadVS("Lambert.cso", "main");
-	ps.LoadPS("Lambert.cso", "main");
+	vs.LoadVS(L"Lambert.cso");
+	ps.LoadPS(L"Lambert.cso");
 
 	// 頂点レイアウトを定義する
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =

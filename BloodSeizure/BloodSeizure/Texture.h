@@ -1,38 +1,95 @@
 #pragma once
 
-#include <d3d12.h>
 #include <ResourceUploadBatch.h>
-#include "ComPtr.h"
+#include "GraphicsEngine.h"
 
 class Texture
 {
 public:
-    Texture();
-    ~Texture();
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    Texture(){}
 
-    // 初期化処理(batch)テクスチャの更新に必要なデータを格納する
-    bool Init(ID3D12Device* pDevice, DescriptorPool* pPool, const wchar_t* filename, DirectX::ResourceUploadBatch& batch);
+    /// <summary>
+    /// デストラクタ
+    /// </summary>
+    ~Texture(){}
 
-    // 初期化処理(isCube)キューブマップである場合はtrueを指定
-    bool Init(ID3D12Device* pDevice, DescriptorPool* pPool, const D3D12_RESOURCE_DESC* pDesc, bool isCube);
+    /// <summary>
+    /// DDSファイルからテクスチャを初期化する
+    /// </summary>
+    /// <param name="filePath">ファイルパス</param>
+    void InitDDSFile(const wchar_t* filePath);
 
-    // 解放処理
-    void Term();
+    /// <summary>
+    /// メモリからテクスチャを初期化する
+    /// </summary>
+    /// <param name="memory">テクスチャデータが格納されてるメモリの先頭アドレス</param>
+    /// <param name="size">テクスチャのサイズ</param>
+    void InitMemory(const char* memory, unsigned int size);
 
-    // CPUディスクリプタハンドルを取得
-    D3D12_CPU_DESCRIPTOR_HANDLE GetHandleCPU() const;
+    /// <summary>
+    /// D3Dリソースからテクスチャを初期化する
+    /// </summary>
+    /// <param name="texture">D3Dリソース</param>
+    void InitD3DResource(ID3D12Resource* texture);
 
-    // GPUディスクリプタハンドルを取得
-    D3D12_GPU_DESCRIPTOR_HANDLE GetHandleGPU() const;
+    /// <summary>
+    /// シェーダーリソースビューを登録(SRV)
+    /// </summary>
+    /// <param name="descriptorHandle"></param>
+    /// <param name="bufferNo"></param>
+    void SetShaderResourceView(D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle, int bufferNo);
+
+    /// <summary>
+    /// テクスチャのリソースを取得
+    /// </summary>
+    /// <returns></returns>
+    ID3D12Resource* Get()
+    {
+        return m_pTexture;
+    }
+
+    /// <summary>
+    /// テクスチャの幅を取得
+    /// </summary>
+    /// <returns></returns>
+    int GetWidth() const
+    {
+        return static_cast<int>(m_textureDesc.Width);
+    }
+
+    /// <summary>
+    /// テクスチャの高さを取得
+    /// </summary>
+    /// <returns></returns>
+    int GetHeight() const
+    {
+        return static_cast<int>(m_textureDesc.Height);
+    }
 
 private:
-    ComPtr<ID3D12Resource>  m_pTex;
-    DescriptorHandle*       m_pHandle;
-    DescriptorPool*         m_pPool;
+    /// <summary>
+    /// DDSファイルからテクスチャをロード
+    /// </summary>
+    /// <param name="filePath">ファイルパス</param>
+    void LoadTextureFromDDSFile(const wchar_t* filePath);
 
-    Texture(const Texture&) = delete;
-    void operator = (const Texture&) = delete;
+    /// <summary>
+    /// メモリからテクスチャをロード
+    /// </summary>
+    /// <param name="memory">テクスチャデータが格納されてるメモリの先頭アドレス</param>
+    /// <param name="size">テクスチャサイズ</param>
+    void LoadTextureFromMemory(const char* memory, unsigned int size);
 
-    // シェーダーリソースの設定を取得
+    /// <summary>
+    /// シェーダーリソースの設定を取得
+    /// </summary>
+    /// <param name="isCube">キューブマップ</param>
+    /// <returns></returns>
     D3D12_SHADER_RESOURCE_VIEW_DESC GetViewDesc(bool isCube);
+
+    ID3D12Resource* m_pTexture = nullptr;
+    D3D12_RESOURCE_DESC m_textureDesc;
 };

@@ -9,14 +9,14 @@ public:
     /// </summary>
     /// <param name="filePath">ファイルパス。</param>
     /// <param name="entryFuncName">エントリーポイントの関数名。</param>
-    void LoadPS(const char* filePath, const char* entryFuncName);
+    void LoadPS(const wchar_t* filePath);
 
     /// <summary>
     /// 頂点シェーダをロード
     /// </summary>
     /// <param name="filePath">ファイルパス。</param>
     /// <param name="entryFuncName">エントリーポイントの関数名。</param>
-    void LoadVS(const char* filePath, const char* entryFuncName);
+    void LoadVS(const wchar_t* filePath);
 
     /// <summary>
     /// コンパイル済み頂点シェーダーのデータを取得
