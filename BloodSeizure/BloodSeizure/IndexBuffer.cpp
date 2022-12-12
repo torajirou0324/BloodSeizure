@@ -2,26 +2,27 @@
 
 // コンストラクタ
 IndexBuffer::IndexBuffer()
-    : m_pIB(nullptr)
 {
-    memset(&m_View, 0, sizeof(m_View));
 }
 
 
 // デストラクタ
 IndexBuffer::~IndexBuffer()
 {
-    Term();
 }
 
-// 初期化処理
-bool IndexBuffer::Init(ID3D12Device* pDevice, size_t size, const uint32_t* pInitData)
+void IndexBuffer::Init(int size, int stride)
 {
-    // 引数チェック
-    if (pDevice == nullptr || size == 0 || pInitData == nullptr)
+    int sizeInBytes = 0;
+    if (stride == 2)
     {
-        return false;
+        sizeInBytes == size * 2;
     }
+    {
+        sizeInBytes = size;
+    }
+
+    auto device = g_graphicsEngine->GetD3DDevice();
 
     // ヒーププロパティ
     D3D12_HEAP_PROPERTIES prop = {};
@@ -46,67 +47,65 @@ bool IndexBuffer::Init(ID3D12Device* pDevice, size_t size, const uint32_t* pInit
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     // リソースの生成
-    auto hr = pDevice->CreateCommittedResource(
+    auto hr = device->CreateCommittedResource(
         &prop,
         D3D12_HEAP_FLAG_NONE,
         &desc,
         D3D12_RESOURCE_STATE_GENERIC_READ,
         nullptr,
-        IID_PPV_ARGS(m_pIB.GetAddressOf())
+        IID_PPV_ARGS(&m_pIndexBuffer)
     );
-    if (FAILED(hr))
-    {
-        return false;
-    }
 
-    // インデックスバッファーの設定
-    m_View.BufferLocation = m_pIB->GetGPUVirtualAddress();
-    m_View.Format = DXGI_FORMAT_R32_UINT;
-    m_View.SizeInBytes = UINT(size);
+    // インデックスバッファービューを作成
+    m_indexBufferView.BufferLocation = m_pIndexBuffer->GetGPUVirtualAddress();
 
-    // 初期化データがあれば、書き込んでおく
-    if (pInitData != nullptr)
-    {
-        void* ptr = Map();
-        if (ptr == nullptr)
-        {
-            return false;
-        }
-
-        memcpy(ptr, pInitData, size);
-    }
-
-    // 正常終了
-    return true;
+    // ストライドは４バイト固定
+    m_strideInBytes = 4;
+    m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+    m_indexBufferView.SizeInBytes = UINT(sizeInBytes);
+    
+    m_count = sizeInBytes / m_strideInBytes;
 }
 
-// 解放処理
-void IndexBuffer::Term()
+void IndexBuffer::Copy(uint16_t* srcIndices)
 {
-    m_pIB.Reset();
-    memset(&m_View, 0, sizeof(m_View));
-}
-
-// メモリマッピング
-uint32_t* IndexBuffer::Map()
-{
-    uint32_t* ptr;
-    auto hr = m_pIB->Map(0, nullptr, reinterpret_cast<void**>(&ptr));
-    if (FAILED(hr))
+    uint32_t* pData;
+    m_pIndexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&pData));
+    for (int i = 0; i < m_count; i++)
     {
-        return nullptr;
+        pData[i] = srcIndices[i];
     }
-    return ptr;
+    m_pIndexBuffer->Unmap(0, nullptr);
 }
 
-// メモリマッピング解除
-void IndexBuffer::Unmap()
+void IndexBuffer::Copy(uint32_t* srcIndices)
 {
-    m_pIB->Unmap(0, nullptr);
+    uint32_t* pData;
+    m_pIndexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&pData));
+    for (int i = 0; i < m_count; i++)
+    {
+        pData[i] = srcIndices[i];
+    }
+    m_pIndexBuffer->Unmap(0, nullptr);
 }
 
 // インデックスバッファービューの取得
 D3D12_INDEX_BUFFER_VIEW IndexBuffer::GetView() const
 {
-    return m_View;
+    return m_indexBufferView;
+}
+
+int IndexBuffer::GetCount() const
+{
+    return m_count;
+}
+
+UINT IndexBuffer::GetStrideInBytes() const
+{
+    return m_strideInBytes;
+}
+
+ID3D12Resource* IndexBuffer::GetID3D12ResourceAddress() const
+{
+    return m_pIndexBuffer;
 }

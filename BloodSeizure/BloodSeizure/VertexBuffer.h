@@ -1,47 +1,49 @@
 #pragma once
 
-#include <d3d12.h>
-#include "ComPtr.h"
+#include "GraphicsEngine.h"
 
+/// <summary>
+/// 頂点バッファ
+/// </summary>
 class VertexBuffer
 {
 public:
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
     VertexBuffer();
+
+    /// <summary>
+    /// デストラクタ
+    /// </summary>
     ~VertexBuffer();
 
-    // 初期化処理
-    bool Init(ID3D12Device* pDevice, size_t size, size_t stride, const void* pInitData = nullptr);
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    /// <param name="size">頂点バッファのサイズ</param>
+    /// <param name="stride">頂点一個のサイズ</param>
+    void Init(int size, int stride);
 
-    // 初期化処理
-    template<typename T>
-    bool Init(ID3D12Device* pDevice,size_t size,const T* pInitData = nullptr)
-    {
-        return Init(pDevice, size, sizeof(T), pInitData);
-    }
+    /// <summary>
+    /// 頂点データを頂点バッファにコピー
+    /// </summary>
+    /// <param name="srcVertices">コピー元の頂点データ</param>
+    void Copy(void* srcVertices);
 
-    // 終了処理
-    void Term();
+    /// <summary>
+    /// ID3D12Resourceのアドレスを取得
+    /// </summary>
+    /// <returns></returns>
+    ID3D12Resource* GetID3DResourceAddress() const;
 
-    // メモリマッピング
-    void* Map();
-
-    // メモリマッピングを解除
-    void Unmap();
-
-    // メモリマッピング
-    template<typename T>
-    T* Map() const
-    {
-        return reinterpret_cast<T*>(Map());
-    }
-
-    // 頂点バッファビューを取得
+    /// <summary>
+    /// 頂点バッファビューを取得
+    /// </summary>
+    /// <returns></returns>
     D3D12_VERTEX_BUFFER_VIEW GetView() const;
 
 private:
-    ComPtr<ID3D12Resource>      m_pVB;      // 頂点バッファ
-    D3D12_VERTEX_BUFFER_VIEW    m_View;     // 頂点バッファビュー
-
-    VertexBuffer(const VertexBuffer&) = delete;
-    void operator = (const VertexBuffer&) = delete;
+    ID3D12Resource* m_pVertexBuffer = nullptr;      // 頂点バッファ
+    D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;    // 頂点バッファビュー
 };

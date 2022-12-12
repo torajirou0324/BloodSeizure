@@ -213,5 +213,11 @@
     <FxCompile Include="LambertPS.hlsl">
       <Filter>ソース ファイル\Shader</Filter>
     </FxCompile>
+    <FxCompile Include="TriangleVS.hlsl">
+      <Filter>ソース ファイル\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="TrianglePS.hlsl">
+      <Filter>ソース ファイル\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

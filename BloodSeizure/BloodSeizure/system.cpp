@@ -17,7 +17,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		// エンジンの破棄
 		if (g_graphicsEngine != nullptr)
 		{
-			GraphicsEngine::Terminate();
+			TermGame();
 		}
 		PostQuitMessage(0);
 		break;
@@ -89,14 +89,16 @@ void InitGame(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, in
 	// ウィンドウの初期化
 	InitWindow(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 	// エンジンの初期化
-	GraphicsEngine::Instance();
+	g_graphicsEngine = new GraphicsEngine;
 	g_graphicsEngine->Init(g_hWnd, FRAME_BUFFER_W, FRAME_BUFFER_H);
 }
 
 void TermGame()
 {
-	// DirectX3D 12の終了処理
-	g_graphicsEngine->Terminate();
+	if (g_graphicsEngine != nullptr)
+	{
+		delete g_graphicsEngine;
+	}
 
 	// ウィンドウの登録解除
 	if (g_hInst != nullptr)

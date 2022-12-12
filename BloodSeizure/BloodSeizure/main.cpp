@@ -26,14 +26,43 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 	vs.LoadVS("Lambert.cso", "main");
 	ps.LoadPS("Lambert.cso", "main");
 
-	PipelineState pipelineState;
 	// 頂点レイアウトを定義する
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
-	//pipelineState.Init()
+
+	PipelineState pipelineState;
+	pipelineState.Init(inputElementDescs, 2, rootSignature, vs, ps);
+
+	SimpleVertex vertices[] = {
+		{
+			{-0.5f,-0.5f,0.0f},
+			{ 1.0f, 0.0f,0.0f}
+		},
+		{
+			{0.0f,0.5f,0.0f},
+			{0.0f,1.0f,0.0f}
+		},
+		{
+			{0.5f,-0.5f,0.0f},
+			{0.0f, 0.0f,1.0f}
+		}
+	};
+
+	VertexBuffer triangleVB;
+	triangleVB.Init(sizeof(vertices), sizeof(vertices[0]));
+	triangleVB.Copy(vertices);
+
+	uint16_t indices[] = {
+		0,1,2
+	};
+	IndexBuffer triangleIB;
+	triangleIB.Init(sizeof(indices), 2);
+	triangleIB.Copy(indices);
+
+	auto& renderContext = g_graphicsEngine->GetRenderContext();
 
 	// ゲームループ
 	while (DispatchWindowMessage())
@@ -41,7 +70,17 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 		// 1フレームの開始（シーンのクリア）
 		g_graphicsEngine->BeginRender();
 
+		renderContext.SetRootSignature(rootSignature);
 
+		renderContext.SetPipelineState(pipelineState);
+
+		renderContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		renderContext.SetVertexBuffer(triangleVB);
+
+		renderContext.SetIndexBuffer(triangleIB);
+
+		renderContext.DrawIndexed(3);
 
 		// 1フレームの終了（表画面と裏画面を入れ替える）
 		g_graphicsEngine->EndRender();

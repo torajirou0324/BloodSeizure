@@ -1,34 +1,69 @@
 #pragma once
 
-#include <d3d12.h>
-#include <cstdint>
-#include "ComPtr.h"
+#include "GraphicsEngine.h"
 
+/// <summary>
+/// インデックスバッファー
+/// </summary>
 class IndexBuffer
 {
 public:
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
     IndexBuffer();
+
+    /// <summary>
+    /// デストラクタ
+    /// </summary>
     ~IndexBuffer();
 
-    // 初期化処理
-    bool Init(ID3D12Device* pDevice, size_t size, const uint32_t* pInitData = nullptr);
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    /// <param name="size">インデックスバッファのサイズ</param>
+    /// <param name="stride">ストライド</param>
+    void Init(int size, int stride);
 
-    // 解放処理
-    void Term();
+    /// <summary>
+    /// インデックスデータをインデックスバッファーにコピー
+    /// </summary>
+    /// <param name="srcIndices">コピー元のインデックスデータ</param>
+    void Copy(uint16_t* srcIndices);
 
-    // メモリマッピング
-    uint32_t* Map();
-
-    // メモリマッピング解除
-    void Unmap();
-
-    // インデックスバッファーを取得
+    /// <summary>
+    /// インデックスデータをインデックスバッファーにコピー
+    /// </summary>
+    /// <param name="srcIndices">コピー元のインデックスデータ</param>
+    void Copy(uint32_t* srcIndices);
+    
+    /// <summary>
+    /// インデックスバッファーを取得
+    /// </summary>
+    /// <returns></returns>
     D3D12_INDEX_BUFFER_VIEW GetView() const;
 
-private:
-    ComPtr<ID3D12Resource>  m_pIB;      // インデックスバッファー
-    D3D12_INDEX_BUFFER_VIEW m_View;     // インデックスバッファービュー
+    /// <summary>
+    /// インデックスの数を取得
+    /// </summary>
+    /// <returns></returns>
+    int GetCount() const;
 
-    IndexBuffer(const IndexBuffer&) = delete;
-    void operator = (const IndexBuffer&) = delete;
+    /// <summary>
+    /// インデックスバッファのストライドを取得
+    /// </summary>
+    /// <returns></returns>
+    UINT GetStrideInBytes() const;
+
+    /// <summary>
+    /// ID3D12Resourceのアドレスを取得
+    /// </summary>
+    /// <returns></returns>
+    ID3D12Resource* GetID3D12ResourceAddress() const;
+
+private:
+    ID3D12Resource* m_pIndexBuffer = nullptr;       // インデックスバッファー
+    D3D12_INDEX_BUFFER_VIEW m_indexBufferView;      // インデックスバッファービュー
+    int m_count = 0;                                // インデックスの数
+    int m_strideInBytes = 0;                        // ストライド（単位：バイト）
 };

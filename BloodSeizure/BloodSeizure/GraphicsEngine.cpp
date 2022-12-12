@@ -1,7 +1,6 @@
 #include "GraphicsEngine.h"
 #include "ComPtr.h"
 
-GraphicsEngine* GraphicsEngine::m_pGraphicsEngine = nullptr;
 GraphicsEngine* g_graphicsEngine = nullptr;
 
 bool GraphicsEngine::Init(HWND hwnd, UINT frameBufferWidth, UINT frameBufferHeight)

@@ -5,6 +5,7 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "RootSignature.h"
+#include "PipelineState.h"
 
 /// <summary>
 /// レンダリングコンテキスト
@@ -35,7 +36,7 @@ public:
     /// 頂点バッファの設定
     /// </summary>
     /// <param name="vb">頂点バッファ</param>
-    void SetVertexBuffer(VertexBuffer& vb)
+    void SetVertexBuffer(VertexBuffer vb)
     {
         m_pCommandList->IASetVertexBuffers(0, 1, &vb.GetView());
     }
@@ -44,7 +45,7 @@ public:
     /// インデックスバッファの設定
     /// </summary>
     /// <param name="ib">インデックスバッファ</param>
-    void SetIndexBuffer(IndexBuffer& ib)
+    void SetIndexBuffer(IndexBuffer ib)
     {
         m_pCommandList->IASetIndexBuffer(&ib.GetView());
     }
@@ -123,9 +124,35 @@ public:
         m_pCommandList->SetComputeRootSignature(rootSignature.Get());
     }
 
-    void SetPipelineState()
+    /// <summary>
+    /// パイプラインステートの設定
+    /// </summary>
+    void SetPipelineState(ID3D12PipelineState* pipelineState)
     {
+        m_pCommandList->SetPipelineState(pipelineState);
+    }
+    void SetPipelineState(PipelineState& pipelineState)
+    {
+        m_pCommandList->SetPipelineState(pipelineState.Get());
+    }
 
+    /// <summary>
+    /// インデックス付きプリミティブ描画
+    /// </summary>
+    /// <param name="indexCount"></param>
+    void DrawIndexed(UINT indexCount)
+    {
+        m_pCommandList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
+    }
+
+    /// <summary>
+    /// インスタンシング描画
+    /// </summary>
+    /// <param name="indexCount"></param>
+    /// <param name="numInstance"></param>
+    void DrawIndexedInstanced(UINT indexCount, UINT numInstance)
+    {
+        m_pCommandList->DrawIndexedInstanced(indexCount, numInstance, 0, 0, 0);
     }
 
 private:
@@ -137,6 +164,6 @@ private:
     ID3D12GraphicsCommandList* m_pCommandList;                              // コマンドリスト
     ID3D12DescriptorHeap* m_pDescriptorHeaps[MAX_DESCRIPTOR_HEAP];          // ディスクリプタヒープの配列
     ConstantBuffer* m_pConstantBuffers[MAX_CONSTANT_BUFFER] = { nullptr };  // 定数バッファの配列
-    Texture* m_pTextures[MAX_SHADER_RESOURCE] = { nullptr };                // シェーダーリソースの配列
+    //Texture* m_pTextures[MAX_SHADER_RESOURCE] = { nullptr };                // シェーダーリソースの配列
     std::vector<ComPtr<ID3D12Resource>> m_scratchResourceList;              // スクラッチリソース
 };

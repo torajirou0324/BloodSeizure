@@ -81,30 +81,6 @@ public:
         return m_renderContext;
     }
 
-    /// <summary>
-    /// DirectX12のグラフィックエンジンを生成
-    /// </summary>
-    static void Instance()
-    {
-        if (m_pGraphicsEngine != nullptr)
-        {
-            m_pGraphicsEngine = new GraphicsEngine;
-            g_graphicsEngine = m_pGraphicsEngine;
-        }
-    }
-
-    /// <summary>
-    /// DirectX12のグラフィックエンジンを解放
-    /// </summary>
-    static void Terminate()
-    {
-        if (m_pGraphicsEngine)
-        {
-            delete m_pGraphicsEngine;
-            m_pGraphicsEngine = nullptr;
-        }
-    }
-
 private:
     /// <summary>
     /// 画面に表示し、次のフレームの準備を行う
@@ -124,9 +100,6 @@ public:
     static const int FRAME_BUFFER_COUNT = 2;
 
 private:
-    /// <summary>グラフィックスエンジンのアドレスを格納するメンバ変数</summary>
-    static GraphicsEngine* m_pGraphicsEngine;
-
     /// <summary>Direct3Dデバイス</summary>
     ComPtr<ID3D12Device> m_pDevice = nullptr;
     /// <summary>コマンドキュー</summary>
