@@ -1,13 +1,13 @@
 #include "PipelineState.h"
 #include "CommonStates.h"
 
-void PipelineState::Init(D3D12_INPUT_ELEMENT_DESC* inputElements, UINT elementSize, RootSignature& rs, Shader& vs, Shader& ps)
+void PipelineState::Init(D3D12_INPUT_ELEMENT_DESC* inputElements, UINT elementSize, ID3D12RootSignature* rs, Shader& vs, Shader& ps)
 {
     D3D12_INPUT_LAYOUT_DESC InputLayout = { inputElements,elementSize };
     // グラフィックスパイプラインステートを設定
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
     desc.InputLayout            = InputLayout;
-    desc.pRootSignature         = rs.Get();
+    desc.pRootSignature         = rs;
     desc.VS                     = { vs.GetCompiledBlob()->GetBufferPointer(),vs.GetCompiledBlob()->GetBufferSize() };
     desc.PS                     = { ps.GetCompiledBlob()->GetBufferPointer(),ps.GetCompiledBlob()->GetBufferSize() };
     desc.RasterizerState        = DirectX::CommonStates::CullNone;

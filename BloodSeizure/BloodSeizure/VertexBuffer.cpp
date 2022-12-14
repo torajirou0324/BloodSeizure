@@ -10,7 +10,7 @@ VertexBuffer::~VertexBuffer()
 {
 }
 
-void VertexBuffer::Init(int size, int stride)
+void VertexBuffer::Init(void* size, int stride)
 {
     auto device = g_graphicsEngine->GetD3DDevice();
     
@@ -37,7 +37,7 @@ void VertexBuffer::Init(int size, int stride)
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     // リソースを生成
-    device->CreateCommittedResource(
+    auto hr = device->CreateCommittedResource(
         &prop,
         D3D12_HEAP_FLAG_NONE,
         &desc,
@@ -45,6 +45,20 @@ void VertexBuffer::Init(int size, int stride)
         nullptr,
         IID_PPV_ARGS(&m_pVertexBuffer)
         );
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+    // マッピングする
+    void* ptr = nullptr;
+    m_pVertexBuffer->Map(0, nullptr, &ptr);
+
+    // 頂点データをマッピング先に設定
+    memcpy(ptr, size, stride);
+
+    // マッピング解除
+    m_pVertexBuffer->Unmap(0, nullptr);
 
     // 頂点バッファビューの設定
     m_vertexBufferView.BufferLocation = m_pVertexBuffer->GetGPUVirtualAddress();
@@ -52,13 +66,13 @@ void VertexBuffer::Init(int size, int stride)
     m_vertexBufferView.SizeInBytes = UINT(size);
 }
 
-void VertexBuffer::Copy(void* srcVertices)
-{
-    uint8_t* pData;
-    m_pVertexBuffer->Map(0, nullptr, (void**)pData);
-    memcpy(pData, srcVertices, m_vertexBufferView.SizeInBytes);
-    m_pVertexBuffer->Unmap(0, nullptr);
-}
+//void VertexBuffer::Copy(void* srcVertices)
+//{
+//    uint8_t* pData = 0;
+//    m_pVertexBuffer->Map(0, nullptr, (void**)pData);
+//    memcpy(pData, srcVertices, m_vertexBufferView.SizeInBytes);
+//    m_pVertexBuffer->Unmap(0, nullptr);
+//}
 
 ID3D12Resource* VertexBuffer::GetID3DResourceAddress() const
 {

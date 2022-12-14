@@ -36,20 +36,20 @@ public:
     /// 頂点バッファの設定
     /// </summary>
     /// <param name="vb">頂点バッファ</param>
-    void SetVertexBuffer(VertexBuffer& vb)
+    void SetVertexBuffer(D3D12_VERTEX_BUFFER_VIEW& vb)
     {
-        auto vertexBufferDesc = vb.GetView();
-        m_pCommandList->IASetVertexBuffers(0, 1, &vertexBufferDesc);
+        /*auto vertexBufferDesc = vb.GetView();*/
+        m_pCommandList->IASetVertexBuffers(0, 1, &vb);
     }
 
     /// <summary>
     /// インデックスバッファの設定
     /// </summary>
     /// <param name="ib">インデックスバッファ</param>
-    void SetIndexBuffer(IndexBuffer& ib)
+    void SetIndexBuffer(D3D12_INDEX_BUFFER_VIEW& ib)
     {
-        auto indexBufferDesc = ib.GetView();
-        m_pCommandList->IASetIndexBuffer(&indexBufferDesc);
+        /*auto indexBufferDesc = ib.GetView();*/
+        m_pCommandList->IASetIndexBuffer(&ib);
     }
 
     /// <summary>
@@ -113,20 +113,11 @@ public:
     {
         m_pCommandList->SetGraphicsRootSignature(rootSignature);
     }
-    void SetRootSignature(RootSignature& rootSignature)
-    {
-        auto ptrRootSig = rootSignature.Get();
-        m_pCommandList->SetGraphicsRootSignature(ptrRootSig);
-    }
-    void SetComputeRootSignature(ID3D12RootSignature* rootSignature)
-    {
-        m_pCommandList->SetComputeRootSignature(rootSignature);
-    }
-    void SetComputeRootSignature(RootSignature& rootSignature)
-    {
-        auto ptrRootSig = rootSignature.Get();
-        m_pCommandList->SetComputeRootSignature(ptrRootSig);
-    }
+    //void SetRootSignature(RootSignature& rootSignature)
+    //{
+    //    auto ptrRootSig = rootSignature.Get();
+    //    m_pCommandList->SetGraphicsRootSignature(rootSignature.Get());
+    //}
 
     /// <summary>
     /// パイプラインステートの設定
@@ -135,11 +126,11 @@ public:
     {
         m_pCommandList->SetPipelineState(pipelineState);
     }
-    void SetPipelineState(PipelineState& pipelineState)
-    {
-        auto PSO = pipelineState.Get();
-        m_pCommandList->SetPipelineState(PSO);
-    }
+    //void SetPipelineState(PipelineState& pipelineState)
+    //{
+    //    auto PSO = pipelineState.Get();
+    //    m_pCommandList->SetPipelineState(pipelineState.Get());
+    //}
 
     /// <summary>
     /// インデックス付きプリミティブ描画
@@ -168,7 +159,7 @@ private:
     D3D12_VIEWPORT m_currentViewport;                                       // 現在のビューポートの設定
     ID3D12GraphicsCommandList* m_pCommandList;                              // コマンドリスト
     ID3D12DescriptorHeap* m_pDescriptorHeaps[MAX_DESCRIPTOR_HEAP];          // ディスクリプタヒープの配列
-    ConstantBuffer* m_pConstantBuffers[MAX_CONSTANT_BUFFER] = { nullptr };  // 定数バッファの配列
-    Texture* m_pTextures[MAX_SHADER_RESOURCE] = { nullptr };                // シェーダーリソースの配列
+    //ConstantBuffer* m_pConstantBuffers[MAX_CONSTANT_BUFFER];                // 定数バッファの配列
+    //Texture* m_pTextures[MAX_SHADER_RESOURCE];                              // シェーダーリソースの配列
     std::vector<ComPtr<ID3D12Resource>> m_scratchResourceList;              // スクラッチリソース
 };

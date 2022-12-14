@@ -44,11 +44,6 @@ public:
     /// </summary>
     /// <param name="data"></param>
     void CopyToVRAM(void* data);
-    template<class T>
-    void CopyToVRAM(T& data)
-    {
-        CopyToVRAM(&data)
-    }
 
 private:
     ComPtr<ID3D12Resource>          m_pConstantBuffer[2] = { nullptr };         // 定数バッファ

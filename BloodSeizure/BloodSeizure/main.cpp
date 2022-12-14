@@ -1,15 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <Windows.h>
 #include "system.h"
 
-// 頂点構造体
-struct SimpleVertex
-{
-	float position[3];
-	float color[4];
-};
 
-int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine, int nCmdShow)
+int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	// ゲームの初期化処理
 	InitGame(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
@@ -23,8 +18,8 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 	rootSignature.Init(&param, 0);
 
 	Shader vs, ps;
-	vs.LoadVS(L"Lambert.cso");
-	ps.LoadPS(L"Lambert.cso");
+	vs.LoadVS(L"LambertVS.cso");
+	ps.LoadPS(L"LambertPS.cso");
 
 	// 頂点レイアウトを定義する
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -34,7 +29,7 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 	};
 
 	PipelineState pipelineState;
-	pipelineState.Init(inputElementDescs, 2, rootSignature, vs, ps);
+	pipelineState.Init(inputElementDescs, 2, rootSignature.Get(), vs, ps);
 
 	SimpleVertex vertices[] = {
 		{
@@ -52,8 +47,7 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 	};
 
 	VertexBuffer triangleVB;
-	triangleVB.Init(sizeof(vertices), sizeof(vertices[0]));
-	triangleVB.Copy(vertices);
+	triangleVB.Init(vertices, sizeof(vertices));
 
 	uint16_t indices[] = {
 		0,1,2
@@ -70,15 +64,19 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPWSTR lpCmdLine
 		// 1フレームの開始（シーンのクリア）
 		g_graphicsEngine->BeginRender();
 
-		renderContext.SetRootSignature(rootSignature);
+		auto root = rootSignature.Get();
+		renderContext.SetRootSignature(root);
 
-		renderContext.SetPipelineState(pipelineState);
+		auto pipe = pipelineState.Get();
+		renderContext.SetPipelineState(pipe);
 
 		renderContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		renderContext.SetVertexBuffer(triangleVB);
+		auto vbdesc = triangleVB.GetView();
+		renderContext.SetVertexBuffer(vbdesc);
 
-		renderContext.SetIndexBuffer(triangleIB);
+		auto ibdesc = triangleIB.GetView();
+		renderContext.SetIndexBuffer(ibdesc);
 
 		renderContext.DrawIndexed(3);
 

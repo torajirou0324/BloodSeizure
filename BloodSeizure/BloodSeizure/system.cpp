@@ -1,7 +1,8 @@
 #include "system.h"
 
-HWND		g_hWnd = NULL;		// ウィンドウのハンドル
-HINSTANCE	g_hInst = NULL;		// インスタンスハンドル
+HWND		g_hWnd = NULL;							// ウィンドウのハンドル
+HINSTANCE	g_hInst = NULL;							// インスタンスハンドル
+const TCHAR* CLASS_NAME = TEXT("BloodSeizure");     // クラスの名前
 
 /////////////////////////////////////////////////
 // メッセージプロシージャー

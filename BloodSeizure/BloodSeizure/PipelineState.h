@@ -1,6 +1,5 @@
 #pragma once
 #include "GraphicsEngine.h"
-#include "RootSignature.h"
 #include "Shader.h"
 
 class PipelineState
@@ -22,7 +21,7 @@ public:
     /// <param name="rs">ルートシグネチャ</param>
     /// <param name="vs">バーテックスシェーダー</param>
     /// <param name="ps">ピクセルシェーダー</param>
-    void Init(D3D12_INPUT_ELEMENT_DESC* inputElements, UINT elementSize, RootSignature& rs, Shader& vs, Shader& ps);
+    void Init(D3D12_INPUT_ELEMENT_DESC* inputElements, UINT elementSize, ID3D12RootSignature* rs, class Shader& vs, class Shader& ps);
 
     /// <summary>
     /// パイプラインステートの取得
