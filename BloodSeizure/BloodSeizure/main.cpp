@@ -2,7 +2,11 @@
 #include <stdlib.h>
 #include <Windows.h>
 #include "system.h"
-
+#include "RootSignature.h"
+#include "Shader.h"
+#include "PipelineState.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
@@ -31,23 +35,15 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	PipelineState pipelineState;
 	pipelineState.Init(inputElementDescs, 2, rootSignature.Get(), vs, ps);
 
-	SimpleVertex vertices[] = {
-		{
-			{-0.5f,-0.5f,0.0f},
-			{ 1.0f, 0.0f,0.0f}
-		},
-		{
-			{0.0f,0.5f,0.0f},
-			{0.0f,1.0f,0.0f}
-		},
-		{
-			{0.5f,-0.5f,0.0f},
-			{0.0f, 0.0f,1.0f}
-		}
+	Vertex vertices[] = {
+		{DirectX::XMFLOAT3(-1.0f,-1.0f,0.0f),DirectX::XMFLOAT4(0.0f,0.0f,1.0f,1.0f)},
+		{DirectX::XMFLOAT3(1.0f,-1.0f,0.0f), DirectX::XMFLOAT4(0.0f,1.0f,0.0f,1.0f)},
+		{DirectX::XMFLOAT3(0.0f,1.0f,0.0f), DirectX::XMFLOAT4(1.0f,0.0f,0.0f,1.0f)},
 	};
 
 	VertexBuffer triangleVB;
-	triangleVB.Init(vertices, sizeof(vertices));
+	triangleVB.Init(sizeof(vertices), sizeof(vertices[0]));
+	triangleVB.Copy(vertices);
 
 	uint16_t indices[] = {
 		0,1,2
@@ -56,7 +52,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	triangleIB.Init(sizeof(indices), 2);
 	triangleIB.Copy(indices);
 
-	auto& renderContext = g_graphicsEngine->GetRenderContext();
+	auto commandList = g_graphicsEngine->GetCommandList();
 
 	// ゲームループ
 	while (DispatchWindowMessage())
@@ -64,21 +60,21 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		// 1フレームの開始（シーンのクリア）
 		g_graphicsEngine->BeginRender();
 
-		auto root = rootSignature.Get();
-		renderContext.SetRootSignature(root);
+		//auto root = rootSignature.Get();
+		commandList->SetGraphicsRootSignature(rootSignature.Get());
 
-		auto pipe = pipelineState.Get();
-		renderContext.SetPipelineState(pipe);
+		//auto pipe = pipelineState.Get();
+		commandList->SetPipelineState(pipelineState.Get());
 
-		renderContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		auto vbdesc = triangleVB.GetView();
-		renderContext.SetVertexBuffer(vbdesc);
+		commandList->IASetVertexBuffers(0, 1, &vbdesc);
 
 		auto ibdesc = triangleIB.GetView();
-		renderContext.SetIndexBuffer(ibdesc);
+		commandList->IASetIndexBuffer(&ibdesc);
 
-		renderContext.DrawIndexed(3);
+		commandList->DrawIndexedInstanced(3, 1, 0, 0, 0);
 
 		// 1フレームの終了（表画面と裏画面を入れ替える）
 		g_graphicsEngine->EndRender();

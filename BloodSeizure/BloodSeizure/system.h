@@ -3,10 +3,10 @@
 #include "GraphicsEngine.h"
 
 // 頂点構造体
-struct SimpleVertex
+struct Vertex
 {
-    float position[3];
-    float color[4];
+    DirectX::XMFLOAT3 position;     // 座標
+    DirectX::XMFLOAT4 color;        // カラー
 };
 
 /// <summary>

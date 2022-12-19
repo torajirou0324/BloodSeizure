@@ -1,5 +1,4 @@
 #pragma once
-
 #include "GraphicsEngine.h"
 
 /// <summary>
@@ -23,13 +22,13 @@ public:
     /// </summary>
     /// <param name="size">頂点バッファのサイズ</param>
     /// <param name="stride">頂点一個のサイズ</param>
-    void Init(void* size, int stride);
+    void Init(int size, int stride);
 
     /// <summary>
     /// 頂点データを頂点バッファにコピー
     /// </summary>
     /// <param name="srcVertices">コピー元の頂点データ</param>
-    //void Copy(void* srcVertices);
+    void Copy(void* srcVertices);
 
     /// <summary>
     /// ID3D12Resourceのアドレスを取得

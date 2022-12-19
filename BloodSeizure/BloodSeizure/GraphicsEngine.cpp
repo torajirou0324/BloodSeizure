@@ -257,7 +257,7 @@ bool GraphicsEngine::Init(HWND hwnd, UINT frameBufferWidth, UINT frameBufferHeig
 		m_fenceValue = 1;
 	}
 
-	m_renderContext.Init(m_pCommandList.Get());
+	//m_renderContext.Init(m_pCommandList.Get());
 
 	// ビューポート
 	m_viewport.TopLeftX = 0;

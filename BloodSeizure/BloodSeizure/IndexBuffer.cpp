@@ -18,6 +18,7 @@ void IndexBuffer::Init(int size, int stride)
     {
         sizeInBytes = size * 2;
     }
+    else
     {
         sizeInBytes = size;
     }

@@ -5,7 +5,7 @@
 #include <d3dcompiler.h>
 #include <vector>
 #include "ComPtr.h"
-#include "RenderContext.h"
+//#include "RenderContext.h"
 
 #pragma comment( lib, "d3d12.lib" )
 #pragma comment( lib, "dxgi.lib" )
@@ -76,9 +76,18 @@ public:
     /// レンダリングコンテキストを取得
     /// </summary>
     /// <returns></returns>
-    RenderContext& GetRenderContext()
+    //RenderContext& GetRenderContext()
+    //{
+    //    return m_renderContext;
+    //}
+
+    /// <summary>
+    /// コマンドリストを取得
+    /// </summary>
+    /// <returns></returns>
+    ID3D12GraphicsCommandList* GetCommandList() const
     {
-        return m_renderContext;
+        return m_pCommandList.Get();
     }
 
     /// <summary>
@@ -146,7 +155,7 @@ private:
     /// <summary>シザリング矩形</summary>
     D3D12_RECT m_scissorRect;
     /// <summary>レンダリングコンテキスト</summary>
-    RenderContext m_renderContext;
+    //RenderContext m_renderContext;
 
     /// <summary>現在書き込み中のフレームバッファのレンダリングターゲットビューのハンドル</summary>
     D3D12_CPU_DESCRIPTOR_HANDLE m_currentFrameBufferRTVHandle;

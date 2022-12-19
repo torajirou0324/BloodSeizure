@@ -3,7 +3,6 @@
 #include "ConstantBuffer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "Texture.h"
 #include "RootSignature.h"
 #include "PipelineState.h"
 
@@ -36,20 +35,20 @@ public:
     /// 頂点バッファの設定
     /// </summary>
     /// <param name="vb">頂点バッファ</param>
-    void SetVertexBuffer(D3D12_VERTEX_BUFFER_VIEW& vb)
+    void SetVertexBuffer(VertexBuffer& vb)
     {
-        /*auto vertexBufferDesc = vb.GetView();*/
-        m_pCommandList->IASetVertexBuffers(0, 1, &vb);
+        auto vertexBufferDesc = vb.GetView();
+        m_pCommandList->IASetVertexBuffers(0, 1, &vertexBufferDesc);
     }
 
     /// <summary>
     /// インデックスバッファの設定
     /// </summary>
     /// <param name="ib">インデックスバッファ</param>
-    void SetIndexBuffer(D3D12_INDEX_BUFFER_VIEW& ib)
+    void SetIndexBuffer(IndexBuffer& ib)
     {
-        /*auto indexBufferDesc = ib.GetView();*/
-        m_pCommandList->IASetIndexBuffer(&ib);
+        auto indexBufferDesc = ib.GetView();
+        m_pCommandList->IASetIndexBuffer(&indexBufferDesc);
     }
 
     /// <summary>
@@ -113,11 +112,11 @@ public:
     {
         m_pCommandList->SetGraphicsRootSignature(rootSignature);
     }
-    //void SetRootSignature(RootSignature& rootSignature)
-    //{
-    //    auto ptrRootSig = rootSignature.Get();
-    //    m_pCommandList->SetGraphicsRootSignature(rootSignature.Get());
-    //}
+    void SetRootSignature(RootSignature& rootSignature)
+    {
+        auto ptrRootSig = rootSignature.Get();
+        m_pCommandList->SetGraphicsRootSignature(ptrRootSig);
+    }
 
     /// <summary>
     /// パイプラインステートの設定
@@ -126,11 +125,11 @@ public:
     {
         m_pCommandList->SetPipelineState(pipelineState);
     }
-    //void SetPipelineState(PipelineState& pipelineState)
-    //{
-    //    auto PSO = pipelineState.Get();
-    //    m_pCommandList->SetPipelineState(pipelineState.Get());
-    //}
+    void SetPipelineState(PipelineState& pipelineState)
+    {
+        auto PSO = pipelineState.Get();
+        m_pCommandList->SetPipelineState(PSO);
+    }
 
     /// <summary>
     /// インデックス付きプリミティブ描画
