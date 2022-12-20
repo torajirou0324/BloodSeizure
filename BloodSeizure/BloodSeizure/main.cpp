@@ -22,8 +22,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	rootSignature.Init(&param, 0);
 
 	Shader vs, ps;
-	vs.LoadVS(L"LambertVS.cso");
-	ps.LoadPS(L"LambertPS.cso");
+	vs.LoadVS(L"TriangleVS.cso");
+	ps.LoadPS(L"TrianglePS.cso");
 
 	// 頂点レイアウトを定義する
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -60,10 +60,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		// 1フレームの開始（シーンのクリア）
 		g_graphicsEngine->BeginRender();
 
-		//auto root = rootSignature.Get();
 		commandList->SetGraphicsRootSignature(rootSignature.Get());
 
-		//auto pipe = pipelineState.Get();
 		commandList->SetPipelineState(pipelineState.Get());
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -73,6 +71,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		auto ibdesc = triangleIB.GetView();
 		commandList->IASetIndexBuffer(&ibdesc);
+
+		auto viewport = g_graphicsEngine->GetViewport();
+		commandList->RSSetViewports(1, &viewport);
+
+		auto rect = g_graphicsEngine->GetRect();
+		commandList->RSSetScissorRects(1, &rect);
 
 		commandList->DrawIndexedInstanced(3, 1, 0, 0, 0);
 

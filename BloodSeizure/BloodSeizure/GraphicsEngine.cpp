@@ -287,7 +287,7 @@ void GraphicsEngine::BeginRender()
 {
 	// コマンドリストの記録を開始
 	m_pCommandAllocator[m_frameIndex]->Reset();
-	m_pCommandList->Reset(m_pCommandAllocator[m_frameIndex].Get(), m_pPipelineState.Get());
+	m_pCommandList->Reset(m_pCommandAllocator[m_frameIndex].Get(), nullptr);
 	m_frameIndex = (m_frameIndex + 1) % uint32_t(FRAME_BUFFER_COUNT);
 
 	// レンダーターゲットビュー分のディスクリプタヒープのアドレスを取得

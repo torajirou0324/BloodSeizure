@@ -99,6 +99,16 @@ public:
         return m_pCommandQueue.Get();
     }
 
+    D3D12_VIEWPORT GetViewport() const
+    {
+        return m_viewport;
+    }
+
+    D3D12_RECT GetRect() const
+    {
+        return m_scissorRect;
+    }
+
 private:
     /// <summary>
     /// 画面に表示し、次のフレームの準備を行う
